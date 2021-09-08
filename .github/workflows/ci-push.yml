@@ -20,9 +20,7 @@ jobs:
         with:
           dotnet-version: 5.0.x
       - name: NuGet Auth
-        uses: StirlingLabs/GithubNugetAuthAction@main
-        with:
-          token: ${{secrets.DAEMON_NUGET}}
+        uses: StirlingLabs/GithubNugetAuthAction@v21.08.1
       - name: Build
         run: dotnet build StirlingLabs.Collections.Net.sln -c Release
       - name: Test
