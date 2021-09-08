@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Authors>Stirling Labs</Authors>
+        <Nullable>enable</Nullable>
+
+        <CollectCoverage>true</CollectCoverage>
+        <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+        <CoverletOutput>../coverage/</CoverletOutput>
+        <DeterministicReport>true</DeterministicReport>
+        <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoBogus" Version="2.13.1" />
+        <PackageReference Include="FluentAssertions" Version="6.1.0" />
+        <PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+        <PackageReference Include="StirlingLabs.BigSpans" Version="21.8.1" />
+        <PackageReference Include="StirlingLabs.BigSpans.NUnit" Version="21.8.1" />
+        <PackageReference Include="coverlet.collector" Version="3.1.0" PrivateAssets="all" />
+        <PackageReference Include="coverlet.msbuild" Version="3.1.0" PrivateAssets="all" />
+        <PackageReference Include="ReportGenerator" Version="4.8.12" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\StirlingLabs.Utilities.Collections\StirlingLabs.Utilities.Collections.csproj" />
+        <ProjectReference Include="..\StirlingLabs.Utilities.Yaml\StirlingLabs.Utilities.Yaml.csproj" />
+        <ProjectReference Include="..\StirlingLabs.Utilities\StirlingLabs.Utilities.csproj" />
+    </ItemGroup>
+    <Target Name="GenerateHtmlCoverageReport" AfterTargets="GenerateCoverageResultAfterTest">
+        <!-- generate markdown coverage report and badges -->
+        <ReportGenerator ReportFiles="@(CoverletReport)" ReportTypes="MarkdownSummary;Badges" SourceDirectories="../StirlingLabs.Utilities" TargetDirectory="../coverage/" />
+      </Target>
+
+</Project>
