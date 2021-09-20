@@ -13,7 +13,6 @@ namespace StirlingLabs.Utilities.Collections.Tests
 {
     public class AsyncProducerConsumerCollectionTests
     {
-        
         public static Thread RunThread(Action a)
         {
             static void Exec(object? o)
@@ -66,11 +65,13 @@ namespace StirlingLabs.Utilities.Collections.Tests
 
             c.GetHashCode().Should().Be(q.GetHashCode());
 
+#pragma warning disable 1718 // intentional, calls overloaded operator
             // ReSharper disable once EqualExpressionComparison
             (c == c).Should().BeTrue();
 
             // ReSharper disable once EqualExpressionComparison
             (c != c).Should().BeFalse();
+#pragma warning restore 1718
 
             foreach (var item in c)
             {
