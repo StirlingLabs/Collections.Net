@@ -27,16 +27,17 @@
         <PackageReference Include="coverlet.collector" Version="3.1.0" PrivateAssets="all" />
         <PackageReference Include="coverlet.msbuild" Version="3.1.0" PrivateAssets="all" />
         <PackageReference Include="ReportGenerator" Version="4.8.12" PrivateAssets="all" />
+        <PackageReference Include="StirlingLabs.Utilities" Version="21.09.3" PrivateAssets="all" />
+        <PackageReference Include="StirlingLabs.Utilities.Yaml" Version="21.09.3" PrivateAssets="all" />
+
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\StirlingLabs.Utilities.Collections\StirlingLabs.Utilities.Collections.csproj" />
-        <ProjectReference Include="..\StirlingLabs.Utilities.Yaml\StirlingLabs.Utilities.Yaml.csproj" />
-        <ProjectReference Include="..\StirlingLabs.Utilities\StirlingLabs.Utilities.csproj" />
     </ItemGroup>
     <Target Name="GenerateHtmlCoverageReport" AfterTargets="GenerateCoverageResultAfterTest">
         <!-- generate markdown coverage report and badges -->
-        <ReportGenerator ReportFiles="@(CoverletReport)" ReportTypes="MarkdownSummary;Badges" SourceDirectories="../StirlingLabs.Utilities" TargetDirectory="../coverage/" />
+        <ReportGenerator ReportFiles="@(CoverletReport)" ReportTypes="MarkdownSummary;Badges" SourceDirectories="../StirlingLabs.Utilities.Collections" TargetDirectory="../coverage/" />
       </Target>
 
 </Project>
