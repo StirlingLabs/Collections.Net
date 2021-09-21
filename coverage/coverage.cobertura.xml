@@ -1,0 +1,872 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<coverage line-rate="0.6257" branch-rate="0.4777" version="1.9" timestamp="1632200121" lines-covered="107" lines-valid="171" branches-covered="43" branches-valid="90">
+  <sources />
+  <packages>
+    <package name="StirlingLabs.Utilities.Collections" line-rate="0.6257" branch-rate="0.4777" complexity="119">
+      <classes>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.cs" line-rate="0.626" branch-rate="0.375" complexity="77">
+          <methods>
+            <method name="get_IsAddingCompleted" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="48" hits="16029" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsCompleted" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="53" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsCompletedInternal" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="59" hits="88045" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsDisposed" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="65" hits="64055" branch="False" />
+              </lines>
+            </method>
+            <method name="SetIsCompleted" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="70" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="CheckDisposed" signature="()" line-rate="0.6666" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="75" hits="64054" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="6" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="76" hits="0" branch="False" />
+                <line number="77" hits="64054" branch="False" />
+              </lines>
+            </method>
+            <method name="SetIsDisposed" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="81" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="TryAdd" signature="(T)" line-rate="0.8" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="86" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="6" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="87" hits="0" branch="False" />
+                <line number="89" hits="1" branch="False" />
+                <line number="90" hits="1" branch="False" />
+                <line number="91" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="TryAddRange" signature="(System.Collections.Generic.IEnumerable`1&lt;T&gt;)" line-rate="0.7272" branch-rate="0.625" complexity="8">
+              <lines>
+                <line number="96" hits="3" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="1" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="98" hits="3" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="20" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="99" hits="0" branch="False" />
+                <line number="101" hits="3" branch="False" />
+                <line number="102" hits="48004" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="70" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="104" hits="23999" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="54" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="105" hits="0" branch="False" />
+                <line number="106" hits="23999" branch="False" />
+                <line number="108" hits="3" branch="False" />
+                <line number="109" hits="3" branch="False" />
+                <line number="110" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="TakeAsync" signature="(System.Threading.CancellationToken)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="115" hits="16000" branch="False" />
+              </lines>
+            </method>
+            <method name="WaitForAvailableAsync" signature="(System.Threading.CancellationToken)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="141" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="IsEmptyInternal" signature="()" line-rate="0.5714" branch-rate="0.1666" complexity="6">
+              <lines>
+                <line number="166" hits="64048" branch="True" condition-coverage="16.66% (1/6)">
+                  <conditions>
+                    <condition number="17" type="jump" coverage="50%" />
+                    <condition number="28" type="jump" coverage="0%" />
+                    <condition number="39" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="167" hits="64048" branch="False" />
+                <line number="168" hits="64048" branch="False" />
+                <line number="169" hits="0" branch="False" />
+                <line number="170" hits="0" branch="False" />
+                <line number="171" hits="0" branch="False" />
+                <line number="172" hits="64048" branch="False" />
+              </lines>
+            </method>
+            <method name="TryToComplete" signature="()" line-rate="1" branch-rate="1" complexity="6">
+              <lines>
+                <line number="178" hits="24026" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="6" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="179" hits="2" branch="False" />
+                <line number="181" hits="24024" branch="True" condition-coverage="100% (4/4)">
+                  <conditions>
+                    <condition number="16" type="jump" coverage="100%" />
+                    <condition number="29" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="182" hits="24023" branch="False" />
+                <line number="184" hits="1" branch="False" />
+                <line number="185" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="System.Collections.IEnumerable.GetEnumerator" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="199" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_Count" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="206" hits="4" branch="False" />
+                <line number="208" hits="4" branch="False" />
+              </lines>
+            </method>
+            <method name="System.Collections.ICollection.get_IsSynchronized" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="216" hits="0" branch="False" />
+                <line number="218" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="System.Collections.ICollection.get_SyncRoot" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="226" hits="0" branch="False" />
+                <line number="228" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsEmpty" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="237" hits="40024" branch="False" />
+                <line number="239" hits="40024" branch="False" />
+              </lines>
+            </method>
+            <method name="CopyTo" signature="(T[],System.Int32)" line-rate="0" branch-rate="0" complexity="8">
+              <lines>
+                <line number="245" hits="0" branch="False" />
+                <line number="246" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="7" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="247" hits="0" branch="True" condition-coverage="0% (0/4)">
+                  <conditions>
+                    <condition number="22" type="jump" coverage="0%" />
+                    <condition number="28" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="249" hits="0" branch="False" />
+                <line number="250" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="84" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="251" hits="0" branch="False" />
+                <line number="252" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="CopyTo" signature="(System.Array,System.Int32)" line-rate="0" branch-rate="0" complexity="8">
+              <lines>
+                <line number="256" hits="0" branch="False" />
+                <line number="257" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="7" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="258" hits="0" branch="True" condition-coverage="0% (0/4)">
+                  <conditions>
+                    <condition number="22" type="jump" coverage="0%" />
+                    <condition number="31" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="260" hits="0" branch="False" />
+                <line number="261" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="92" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="262" hits="0" branch="False" />
+                <line number="263" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="ToArray" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="269" hits="0" branch="False" />
+                <line number="271" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="TryTake" signature="(T&amp;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="277" hits="8000" branch="False" />
+                <line number="279" hits="8000" branch="False" />
+                <line number="280" hits="8000" branch="False" />
+                <line number="281" hits="8000" branch="False" />
+              </lines>
+            </method>
+            <method name="CompleteAdding" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="286" hits="1" branch="False" />
+                <line number="288" hits="1" branch="False" />
+                <line number="289" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="ClearInternal" signature="()" line-rate="0.5" branch-rate="0.375" complexity="8">
+              <lines>
+                <line number="294" hits="1" branch="True" condition-coverage="33.33% (2/6)">
+                  <conditions>
+                    <condition number="15" type="jump" coverage="50%" />
+                    <condition number="25" type="jump" coverage="50%" />
+                    <condition number="35" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="297" hits="0" branch="False" />
+                <line number="298" hits="0" branch="False" />
+                <line number="301" hits="1" branch="False" />
+                <line number="302" hits="1" branch="False" />
+                <line number="304" hits="0" branch="False" />
+                <line number="305" hits="0" branch="False" />
+                <line number="308" hits="0" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="76" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="312" hits="1" branch="False" />
+                <line number="313" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="Clear" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="317" hits="0" branch="False" />
+                <line number="319" hits="0" branch="False" />
+                <line number="320" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="Dispose" signature="()" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="324" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="6" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="325" hits="1" branch="False" />
+                <line number="327" hits="1" branch="False" />
+                <line number="328" hits="1" branch="False" />
+                <line number="330" hits="1" branch="False" />
+                <line number="332" hits="1" branch="False" />
+                <line number="333" hits="1" branch="False" />
+                <line number="334" hits="1" branch="False" />
+                <line number="335" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="OnCompleted" signature="(System.Action)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="339" hits="0" branch="False" />
+                <line number="340" hits="0" branch="False" />
+                <line number="341" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="Completed" signature="()" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="346" hits="1" branch="False" />
+                <line number="348" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="24" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="349" hits="1" branch="False" />
+                <line number="350" hits="1" branch="False" />
+                <line number="351" hits="1" branch="False" />
+                <line number="352" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="GetConsumer" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="357" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="GetAwaiter" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="363" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(System.Collections.Concurrent.IProducerConsumerCollection`1&lt;T&gt;)" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="19" hits="1" branch="False" />
+                <line number="31" hits="1" branch="False" />
+                <line number="33" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="21" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="34" hits="1" branch="False" />
+                <line number="35" hits="1" branch="False" />
+                <line number="36" hits="1" branch="False" />
+                <line number="37" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="40" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(System.Collections.Generic.IEnumerable`1&lt;T&gt;)" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="43" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="9" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="44" hits="1" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="48" hits="16029" branch="False" />
+            <line number="53" hits="1" branch="False" />
+            <line number="59" hits="88045" branch="False" />
+            <line number="65" hits="64055" branch="False" />
+            <line number="70" hits="1" branch="False" />
+            <line number="75" hits="64054" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="6" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="76" hits="0" branch="False" />
+            <line number="77" hits="64054" branch="False" />
+            <line number="81" hits="1" branch="False" />
+            <line number="86" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="6" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="87" hits="0" branch="False" />
+            <line number="89" hits="1" branch="False" />
+            <line number="90" hits="1" branch="False" />
+            <line number="91" hits="1" branch="False" />
+            <line number="96" hits="3" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="1" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="98" hits="3" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="20" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="99" hits="0" branch="False" />
+            <line number="101" hits="3" branch="False" />
+            <line number="102" hits="48004" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="70" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="104" hits="23999" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="54" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="105" hits="0" branch="False" />
+            <line number="106" hits="23999" branch="False" />
+            <line number="108" hits="3" branch="False" />
+            <line number="109" hits="3" branch="False" />
+            <line number="110" hits="0" branch="False" />
+            <line number="115" hits="16000" branch="False" />
+            <line number="141" hits="0" branch="False" />
+            <line number="166" hits="64048" branch="True" condition-coverage="16.66% (1/6)">
+              <conditions>
+                <condition number="17" type="jump" coverage="50%" />
+                <condition number="28" type="jump" coverage="0%" />
+                <condition number="39" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="167" hits="64048" branch="False" />
+            <line number="168" hits="64048" branch="False" />
+            <line number="169" hits="0" branch="False" />
+            <line number="170" hits="0" branch="False" />
+            <line number="171" hits="0" branch="False" />
+            <line number="172" hits="64048" branch="False" />
+            <line number="178" hits="24026" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="6" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="179" hits="2" branch="False" />
+            <line number="181" hits="24024" branch="True" condition-coverage="100% (4/4)">
+              <conditions>
+                <condition number="16" type="jump" coverage="100%" />
+                <condition number="29" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="182" hits="24023" branch="False" />
+            <line number="184" hits="1" branch="False" />
+            <line number="185" hits="1" branch="False" />
+            <line number="199" hits="0" branch="False" />
+            <line number="206" hits="4" branch="False" />
+            <line number="208" hits="4" branch="False" />
+            <line number="216" hits="0" branch="False" />
+            <line number="218" hits="0" branch="False" />
+            <line number="226" hits="0" branch="False" />
+            <line number="228" hits="0" branch="False" />
+            <line number="237" hits="40024" branch="False" />
+            <line number="239" hits="40024" branch="False" />
+            <line number="245" hits="0" branch="False" />
+            <line number="246" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="7" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="247" hits="0" branch="True" condition-coverage="0% (0/4)">
+              <conditions>
+                <condition number="22" type="jump" coverage="0%" />
+                <condition number="28" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="249" hits="0" branch="False" />
+            <line number="250" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="84" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="251" hits="0" branch="False" />
+            <line number="252" hits="0" branch="False" />
+            <line number="256" hits="0" branch="False" />
+            <line number="257" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="7" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="258" hits="0" branch="True" condition-coverage="0% (0/4)">
+              <conditions>
+                <condition number="22" type="jump" coverage="0%" />
+                <condition number="31" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="260" hits="0" branch="False" />
+            <line number="261" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="92" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="262" hits="0" branch="False" />
+            <line number="263" hits="0" branch="False" />
+            <line number="269" hits="0" branch="False" />
+            <line number="271" hits="0" branch="False" />
+            <line number="277" hits="8000" branch="False" />
+            <line number="279" hits="8000" branch="False" />
+            <line number="280" hits="8000" branch="False" />
+            <line number="281" hits="8000" branch="False" />
+            <line number="286" hits="1" branch="False" />
+            <line number="288" hits="1" branch="False" />
+            <line number="289" hits="1" branch="False" />
+            <line number="294" hits="1" branch="True" condition-coverage="33.33% (2/6)">
+              <conditions>
+                <condition number="15" type="jump" coverage="50%" />
+                <condition number="25" type="jump" coverage="50%" />
+                <condition number="35" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="297" hits="0" branch="False" />
+            <line number="298" hits="0" branch="False" />
+            <line number="301" hits="1" branch="False" />
+            <line number="302" hits="1" branch="False" />
+            <line number="304" hits="0" branch="False" />
+            <line number="305" hits="0" branch="False" />
+            <line number="308" hits="0" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="76" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="312" hits="1" branch="False" />
+            <line number="313" hits="1" branch="False" />
+            <line number="317" hits="0" branch="False" />
+            <line number="319" hits="0" branch="False" />
+            <line number="320" hits="0" branch="False" />
+            <line number="324" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="6" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="325" hits="1" branch="False" />
+            <line number="327" hits="1" branch="False" />
+            <line number="328" hits="1" branch="False" />
+            <line number="330" hits="1" branch="False" />
+            <line number="332" hits="1" branch="False" />
+            <line number="333" hits="1" branch="False" />
+            <line number="334" hits="1" branch="False" />
+            <line number="335" hits="1" branch="False" />
+            <line number="339" hits="0" branch="False" />
+            <line number="340" hits="0" branch="False" />
+            <line number="341" hits="0" branch="False" />
+            <line number="346" hits="1" branch="False" />
+            <line number="348" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="24" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="349" hits="1" branch="False" />
+            <line number="350" hits="1" branch="False" />
+            <line number="351" hits="1" branch="False" />
+            <line number="352" hits="1" branch="False" />
+            <line number="357" hits="1" branch="False" />
+            <line number="363" hits="0" branch="False" />
+            <line number="19" hits="1" branch="False" />
+            <line number="31" hits="1" branch="False" />
+            <line number="33" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="21" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="34" hits="1" branch="False" />
+            <line number="35" hits="1" branch="False" />
+            <line number="36" hits="1" branch="False" />
+            <line number="37" hits="1" branch="False" />
+            <line number="40" hits="0" branch="False" />
+            <line number="43" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="9" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="44" hits="1" branch="False" />
+          </lines>
+        </class>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/&lt;TakeAsync&gt;d__25" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.cs" line-rate="0.8887999999999999" branch-rate="0.75" complexity="4">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="0.8887999999999999" branch-rate="0.75" complexity="4">
+              <lines>
+                <line number="122" hits="16023" branch="False" />
+                <line number="123" hits="16023" branch="False" />
+                <line number="125" hits="16023" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="155" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="127" hits="16000" branch="False" />
+                <line number="128" hits="16000" branch="False" />
+                <line number="131" hits="23" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="174" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="132" hits="0" branch="False" />
+                <line number="134" hits="23" branch="False" />
+                <line number="136" hits="16000" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="122" hits="16023" branch="False" />
+            <line number="123" hits="16023" branch="False" />
+            <line number="125" hits="16023" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="155" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="127" hits="16000" branch="False" />
+            <line number="128" hits="16000" branch="False" />
+            <line number="131" hits="23" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="174" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="132" hits="0" branch="False" />
+            <line number="134" hits="23" branch="False" />
+            <line number="136" hits="16000" branch="False" />
+          </lines>
+        </class>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/&lt;WaitForAvailableAsync&gt;d__27" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.cs" line-rate="0.5832999999999999" branch-rate="0.625" complexity="8">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="0.5832999999999999" branch-rate="0.625" complexity="8">
+              <lines>
+                <line number="145" hits="16023" branch="False" />
+                <line number="147" hits="16023" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="39" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="148" hits="0" branch="False" />
+                <line number="150" hits="32022" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="58" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="152" hits="24" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="71" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="153" hits="0" branch="False" />
+                <line number="155" hits="24" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="104" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="156" hits="24" branch="False" />
+                <line number="159" hits="0" branch="False" />
+                <line number="160" hits="0" branch="False" />
+                <line number="161" hits="0" branch="False" />
+                <line number="162" hits="16023" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="145" hits="16023" branch="False" />
+            <line number="147" hits="16023" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="39" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="148" hits="0" branch="False" />
+            <line number="150" hits="32022" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="58" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="152" hits="24" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="71" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="153" hits="0" branch="False" />
+            <line number="155" hits="24" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="104" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="156" hits="24" branch="False" />
+            <line number="159" hits="0" branch="False" />
+            <line number="160" hits="0" branch="False" />
+            <line number="161" hits="0" branch="False" />
+            <line number="162" hits="16023" branch="False" />
+          </lines>
+        </class>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/&lt;GetEnumerator&gt;d__30" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.cs" line-rate="0" branch-rate="0" complexity="2">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="0" branch-rate="0" complexity="2">
+              <lines>
+                <line number="190" hits="0" branch="False" />
+                <line number="192" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="114" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
+                <line number="193" hits="0" branch="False" />
+                <line number="194" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="190" hits="0" branch="False" />
+            <line number="192" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="114" type="jump" coverage="0%" />
+              </conditions>
+            </line>
+            <line number="193" hits="0" branch="False" />
+            <line number="194" hits="0" branch="False" />
+          </lines>
+        </class>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.Consumer.cs" line-rate="0.8887999999999999" branch-rate="0.5" complexity="10">
+          <methods>
+            <method name="Equals" signature="(StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer&lt;T&gt;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="25" hits="4" branch="False" />
+              </lines>
+            </method>
+            <method name="Equals" signature="(System.Object)" line-rate="1" branch-rate="0.5" complexity="2">
+              <lines>
+                <line number="29" hits="1" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="6" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+              </lines>
+            </method>
+            <method name="GetHashCode" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="33" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="System.Collections.IEnumerable.GetEnumerator" signature="()" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="90" hits="0" branch="False" />
+              </lines>
+            </method>
+            <method name="op_Equality" signature="(StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer&lt;T&gt;,StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer&lt;T&gt;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="94" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="op_Inequality" signature="(StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer&lt;T&gt;,StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer&lt;T&gt;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="98" hits="1" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsEmpty" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="103" hits="23998" branch="False" />
+              </lines>
+            </method>
+            <method name="get_IsCompleted" signature="()" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="109" hits="23999" branch="False" />
+              </lines>
+            </method>
+            <method name=".ctor" signature="(StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1&lt;T&gt;)" line-rate="1" branch-rate="1" complexity="1">
+              <lines>
+                <line number="21" hits="1" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="25" hits="4" branch="False" />
+            <line number="29" hits="1" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="6" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="33" hits="1" branch="False" />
+            <line number="90" hits="0" branch="False" />
+            <line number="94" hits="1" branch="False" />
+            <line number="98" hits="1" branch="False" />
+            <line number="103" hits="23998" branch="False" />
+            <line number="109" hits="23999" branch="False" />
+            <line number="21" hits="1" branch="False" />
+          </lines>
+        </class>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer/&lt;GetAsyncEnumerator&gt;d__5" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.Consumer.cs" line-rate="0.6363" branch-rate="0.7857" complexity="14">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="0.6363" branch-rate="0.7857" complexity="14">
+              <lines>
+                <line number="37" hits="2" branch="True" condition-coverage="87.5% (7/8)">
+                  <conditions>
+                    <condition number="11" type="switch" coverage="100%" />
+                    <condition number="42" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="44" hits="16000" branch="False" />
+                <line number="45" hits="16000" branch="False" />
+                <line number="46" hits="16000" branch="False" />
+                <line number="47" hits="0" branch="False" />
+                <line number="49" hits="0" branch="False" />
+                <line number="52" hits="16000" branch="True" condition-coverage="100% (2/2)">
+                  <conditions>
+                    <condition number="255" type="jump" coverage="100%" />
+                  </conditions>
+                </line>
+                <line number="53" hits="15998" branch="True" condition-coverage="50% (2/4)">
+                  <conditions>
+                    <condition number="288" type="jump" coverage="50%" />
+                    <condition number="270" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="55" hits="0" branch="False" />
+                <line number="57" hits="0" branch="False" />
+                <line number="58" hits="2" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="37" hits="2" branch="True" condition-coverage="87.5% (7/8)">
+              <conditions>
+                <condition number="11" type="switch" coverage="100%" />
+                <condition number="42" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="44" hits="16000" branch="False" />
+            <line number="45" hits="16000" branch="False" />
+            <line number="46" hits="16000" branch="False" />
+            <line number="47" hits="0" branch="False" />
+            <line number="49" hits="0" branch="False" />
+            <line number="52" hits="16000" branch="True" condition-coverage="100% (2/2)">
+              <conditions>
+                <condition number="255" type="jump" coverage="100%" />
+              </conditions>
+            </line>
+            <line number="53" hits="15998" branch="True" condition-coverage="50% (2/4)">
+              <conditions>
+                <condition number="288" type="jump" coverage="50%" />
+                <condition number="270" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="55" hits="0" branch="False" />
+            <line number="57" hits="0" branch="False" />
+            <line number="58" hits="2" branch="False" />
+          </lines>
+        </class>
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer/&lt;GetEnumerator&gt;d__6" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.Consumer.cs" line-rate="0.4545" branch-rate="0.5" complexity="4">
+          <methods>
+            <method name="MoveNext" signature="()" line-rate="0.4545" branch-rate="0.5" complexity="4">
+              <lines>
+                <line number="62" hits="1" branch="False" />
+                <line number="69" hits="8000" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="58" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="71" hits="0" branch="False" />
+                <line number="73" hits="8000" branch="False" />
+                <line number="74" hits="0" branch="False" />
+                <line number="76" hits="0" branch="False" />
+                <line number="79" hits="8000" branch="False" />
+                <line number="80" hits="7999" branch="True" condition-coverage="50% (1/2)">
+                  <conditions>
+                    <condition number="108" type="jump" coverage="50%" />
+                  </conditions>
+                </line>
+                <line number="82" hits="0" branch="False" />
+                <line number="84" hits="0" branch="False" />
+                <line number="85" hits="0" branch="False" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="62" hits="1" branch="False" />
+            <line number="69" hits="8000" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="58" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="71" hits="0" branch="False" />
+            <line number="73" hits="8000" branch="False" />
+            <line number="74" hits="0" branch="False" />
+            <line number="76" hits="0" branch="False" />
+            <line number="79" hits="8000" branch="False" />
+            <line number="80" hits="7999" branch="True" condition-coverage="50% (1/2)">
+              <conditions>
+                <condition number="108" type="jump" coverage="50%" />
+              </conditions>
+            </line>
+            <line number="82" hits="0" branch="False" />
+            <line number="84" hits="0" branch="False" />
+            <line number="85" hits="0" branch="False" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>
