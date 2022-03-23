@@ -5,7 +5,7 @@ on:
       - 'v*'
 jobs:
   create_release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
         DOTNET_NOLOGO: true
         DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -14,10 +14,20 @@ jobs:
         with:
           submodules: true
       - name: Fetch tag git metadata
-        run: git fetch --force --update-shallow --depth 1 origin 'refs/tags/*:refs/tags/*'
-      - uses: actions/setup-dotnet@v1.8.1
+        run: git fetch --force --update-shallow --depth 1 origin +refs/tags/*:refs/tags/* || echo no tags
+      - name: Check for .NET 6 preinstalled
+        id: dotnet_check
+        run: |
+          compgen -G "~/.dotnet/sdk/6.0.*" \
+          && echo "::set-output name=has_6_0::true" || \
+          compgen -G "/usr/local/dotnet/sdk/6.0.*" \
+          && echo "::set-output name=has_6_0::true" || \
+          compgen -G "/usr/share/dotnet/sdk/6.0.*" \
+          && echo "::set-output name=has_6_0::true" || true
+      - uses: actions/setup-dotnet@v1.9.1
+        if: ${{ steps.dotnet_check.outputs.has_6_0 != 'true' }}
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
       - name: NuGet Auth
         uses: StirlingLabs/GithubNugetAuthAction@main
         with:
@@ -26,8 +36,10 @@ jobs:
         run: dotnet build StirlingLabs.Collections.Net.sln -c Release
       - name: Test
         run: dotnet test StirlingLabs.Collections.Net.sln --no-build -c Release --logger GitHubActions
+      - name: Confirm NuPkg
+        run: ls -la artifacts/*.nupkg
       - name: Push NuPkg
-        run: dotnet nuget push artifacts/*.nupkg -k ${{github.token}} -s https://nuget.pkg.github.com/${{github.repository_owner}}/index.json -n 1
+        run: dotnet nuget push artifacts/*.nupkg -k ${{github.token}} -s https://nuget.pkg.github.com/${{github.repository_owner}}/index.json -n 1 --skip-duplicate || true
       - name: Save coverage to storage branch
         uses: StirlingLabs/BranchStorageAction@v21.07.3
         with:
