@@ -161,6 +161,27 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         }
     }
 
+    public void WaitForAvailable(CancellationToken cancellationToken)
+    {
+        CheckDisposed();
+
+        if (IsCompletedInternal)
+            throw new InvalidOperationException("The AsyncQueue has already fully completed.");
+
+        if (!IsEmpty) return;
+
+        if (IsAddingCompleted)
+            throw new OperationCanceledException("The AsyncQueue completed adding, therefore there will not be any more available items.");
+
+        if (cancellationToken == default)
+            _semaphore.Wait(_addingComplete.Token);
+        else
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(_addingComplete.Token, cancellationToken);
+            _semaphore.Wait(cts.Token);
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsEmptyInternal()
         => _collection switch

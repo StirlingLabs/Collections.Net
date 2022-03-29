@@ -5,84 +5,96 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace StirlingLabs.Utilities.Collections;
 
 public sealed partial class AsyncProducerConsumerCollection<T>
 {
+    [PublicAPI]
     [SuppressMessage("Microsoft.Design", "CA1034", Justification = "Nested class has private member access")]
-    public readonly struct Consumer : IAsyncConsumer<T>, IEquatable<Consumer>
+    public struct Consumer : IAsyncConsumer<T>, IEquatable<Consumer>, IAsyncEnumerator<T>, IEnumerator<T>
     {
+        private static readonly bool IsClassType = typeof(T).IsClass;
+        private static readonly int SizeOfType = Unsafe.SizeOf<T>();
+
         public readonly AsyncProducerConsumerCollection<T> Collection;
+
+        private int _isBeingEnumerated;
+
+        private CancellationToken _cancellationToken;
+        private T _current;
+        private int _alsoCurrent;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Consumer(AsyncProducerConsumerCollection<T> collection)
-            => Collection = collection;
+        internal Consumer(AsyncProducerConsumerCollection<T> collection, CancellationToken cancellationToken = default)
+        {
+            Collection = collection;
+            _cancellationToken = cancellationToken;
+            _current = default!;
+            _alsoCurrent = 0;
+            _isBeingEnumerated = 0;
+        }
 
+        object IEnumerator.Current => Current!;
+
+        public T Current
+        {
+            [MustUseReturnValue]
+            get => ExchangeCurrentWithDefault();
+            private set => ExchangeCurrent(value);
+        }
+
+        public bool IsBeingEnumerated
+        {
+            get => Interlocked.CompareExchange(ref _isBeingEnumerated, 0, 0) != 0;
+            private set => Interlocked.Exchange(ref _isBeingEnumerated, value ? 1 : 0);
+        }
+
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Collection.IsEmpty;
+        }
+
+        public bool IsCompleted
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Collection.IsCompletedInternal;
+        }
+
+        [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Consumer other)
             => Collection.Equals(other.Collection);
 
+        [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object? obj)
             => obj is Consumer other && Equals(other);
 
+        [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
             => Collection.GetHashCode();
 
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        public void SetCancellationToken(CancellationToken cancellationToken = default)
         {
-            Collection.CheckDisposed();
+            if (IsBeingEnumerated) throw new InvalidOperationException("May only be consumed once.");
+            _cancellationToken = cancellationToken;
+        }
 
-            do
-            {
-                T item;
-                try
-                {
-                    item = await Collection.TakeAsync(cancellationToken)
-                        .ConfigureAwait(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    yield break;
-                }
-
-                yield return item;
-            } while (!cancellationToken.IsCancellationRequested && !Collection.IsCompletedInternal);
-
-            Collection.TryToComplete();
-
-            Collection.CheckDisposed();
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            SetCancellationToken(cancellationToken);
+            IsBeingEnumerated = true;
+            return this;
         }
 
         public IEnumerator<T> GetEnumerator()
-        {
-            Collection.CheckDisposed();
-
-            do
-            {
-                T item;
-                try
-                {
-                    if (!Collection.TryTake(out item!))
-                    {
-                        break;
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    yield break;
-                }
-
-                yield return item;
-            } while (!Collection.IsCompletedInternal);
-
-            Collection.TryToComplete();
-
-            Collection.CheckDisposed();
-        }
+            => this;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,16 +109,153 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         public static bool operator !=(Consumer left, Consumer right)
             => !left.Equals(right);
 
-        public bool IsEmpty
+        [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task")]
+        public async ValueTask<bool> MoveNextAsync()
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Collection.IsEmpty;
+            IsBeingEnumerated = true;
+            Collection.CheckDisposed();
+            do
+            {
+                if (!Collection.TryTake(out var item))
+                {
+                    await Collection.WaitForAvailableAsync(_cancellationToken);
+                    break;
+                }
+                Current = item;
+            } while (!Collection.IsCompletedInternal);
+            Collection.TryToComplete();
+            Collection.CheckDisposed();
+            return true;
         }
 
-        public bool IsCompleted
+        public bool MoveNext()
+        {
+            IsBeingEnumerated = true;
+            Collection.CheckDisposed();
+            do
+            {
+                if (!Collection.TryTake(out var item))
+                {
+                    Collection.WaitForAvailable(_cancellationToken);
+                    break;
+                }
+                Current = item;
+            } while (!Collection.IsCompletedInternal);
+            Collection.TryToComplete();
+            Collection.CheckDisposed();
+            return true;
+        }
+
+        [MustUseReturnValue]
+#if NETSTANDARD2_0
+        public bool TryMoveNext(out T? item)
+#else
+        public bool TryMoveNext([NotNullWhen(true)] out T? item)
+#endif
+        {
+            IsBeingEnumerated = true;
+            Collection.CheckDisposed();
+            if (!Collection.TryTake(out item!))
+                return false;
+            ExchangeCurrentWithDefault();
+            Collection.TryToComplete();
+            Collection.CheckDisposed();
+            return true;
+        }
+
+
+        [MustUseReturnValue]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private T ExchangeCurrent(T value)
+        {
+
+            if (IsClassType)
+            {
+                var o = Interlocked.Exchange(ref Unsafe.As<T, object>(ref _current)!, null);
+                return Unsafe.As<object, T>(ref o);
+            }
+
+            switch (SizeOfType)
+            {
+                case 8: {
+                    var x = Unsafe.As<T, long>(ref value);
+                    var v = Interlocked.Exchange(ref Unsafe.As<T, long>(ref _current), x);
+                    return Unsafe.As<long, T>(ref v);
+                }
+                case 4: {
+                    var x = Unsafe.As<T, int>(ref value);
+                    var v = Interlocked.Exchange(ref Unsafe.As<T, int>(ref _current), x);
+                    return Unsafe.As<int, T>(ref v);
+                }
+                case 3:
+                case 2:
+                case 1: {
+                    var x = Unsafe.As<T, int>(ref value);
+                    x &= (int)(uint.MaxValue >> (4 - SizeOfType * 8));
+                    var v = Interlocked.Exchange(ref _alsoCurrent, x);
+                    return Unsafe.As<int, T>(ref v);
+                }
+                default:
+                    throw new NotImplementedException(typeof(T).AssemblyQualifiedName);
+            }
+        }
+
+        [MustUseReturnValue]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private T ExchangeCurrentWithDefault()
+        {
+
+            if (IsClassType)
+            {
+                var o = Interlocked.Exchange(ref Unsafe.As<T, object>(ref _current)!, null);
+                return Unsafe.As<object, T>(ref o);
+            }
+            switch (SizeOfType)
+            {
+                case 8: {
+                    var v = Interlocked.Exchange(ref Unsafe.As<T, long>(ref _current), default);
+                    return Unsafe.As<long, T>(ref v);
+                }
+                case 4: {
+                    var v = Interlocked.Exchange(ref Unsafe.As<T, int>(ref _current), default);
+                    return Unsafe.As<int, T>(ref v);
+                }
+                case 3:
+                case 2:
+                case 1: {
+                    var v = Interlocked.Exchange(ref _alsoCurrent, default);
+                    return Unsafe.As<int, T>(ref v);
+                }
+                default:
+                    throw new NotImplementedException(typeof(T).AssemblyQualifiedName);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetCurrentToDefault()
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Collection.IsCompletedInternal;
+            static void Discard(T v) { }
+
+            Discard(ExchangeCurrentWithDefault());
         }
+
+        public void Dispose()
+        {
+            IsBeingEnumerated = true;
+            Current = default!;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return default;
+        }
+
+        public void Reset()
+            => throw new NotSupportedException();
+
+        public ValueTask WaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken)
+            => Collection.WaitForAvailableAsync(continueOnCapturedContext, cancellationToken);
     }
 }
