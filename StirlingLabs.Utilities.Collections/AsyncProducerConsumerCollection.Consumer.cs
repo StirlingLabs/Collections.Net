@@ -14,7 +14,7 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 {
     [PublicAPI]
     [SuppressMessage("Microsoft.Design", "CA1034", Justification = "Nested class has private member access")]
-    public struct Consumer : IAsyncConsumer<T>, IEquatable<Consumer>, IAsyncEnumerator<T>, IEnumerator<T>
+    public class Consumer : IAsyncConsumer<T>, IEquatable<Consumer>, IAsyncEnumerator<T>, IEnumerator<T>
     {
         private static readonly bool IsClassType = typeof(T).IsClass;
         private static readonly int SizeOfType = Unsafe.SizeOf<T>();
@@ -40,10 +40,13 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 
         object IEnumerator.Current => Current!;
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public T Current
         {
+            [DebuggerHidden]
             [MustUseReturnValue]
             get => ExchangeCurrentWithDefault();
+            [SuppressMessage("ReSharper", "MustUseReturnValue")]
             private set => ExchangeCurrent(value);
         }
 
@@ -88,6 +91,9 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
+            if (IsBeingEnumerated)
+                return new Consumer(Collection, cancellationToken);
+
             SetCancellationToken(cancellationToken);
             IsBeingEnumerated = true;
             return this;
@@ -116,12 +122,12 @@ public sealed partial class AsyncProducerConsumerCollection<T>
             Collection.CheckDisposed();
             do
             {
-                if (!Collection.TryTake(out var item))
+                if (Collection.TryTake(out var item))
                 {
-                    await Collection.WaitForAvailableAsync(_cancellationToken);
+                    Current = item;
                     break;
                 }
-                Current = item;
+                await Collection.WaitForAvailableAsync(_cancellationToken);
             } while (!Collection.IsCompletedInternal);
             Collection.TryToComplete();
             Collection.CheckDisposed();
@@ -134,12 +140,12 @@ public sealed partial class AsyncProducerConsumerCollection<T>
             Collection.CheckDisposed();
             do
             {
-                if (!Collection.TryTake(out var item))
+                if (Collection.TryTake(out var item))
                 {
-                    Collection.WaitForAvailable(_cancellationToken);
+                    Current = item;
                     break;
                 }
-                Current = item;
+                Collection.WaitForAvailable(_cancellationToken);
             } while (!Collection.IsCompletedInternal);
             Collection.TryToComplete();
             Collection.CheckDisposed();
@@ -157,6 +163,7 @@ public sealed partial class AsyncProducerConsumerCollection<T>
             Collection.CheckDisposed();
             if (!Collection.TryTake(out item!))
                 return false;
+            // ReSharper disable once MustUseReturnValue
             ExchangeCurrentWithDefault();
             Collection.TryToComplete();
             Collection.CheckDisposed();
@@ -168,10 +175,9 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T ExchangeCurrent(T value)
         {
-
             if (IsClassType)
             {
-                var o = Interlocked.Exchange(ref Unsafe.As<T, object>(ref _current)!, null);
+                var o = Interlocked.Exchange(ref Unsafe.As<T, object>(ref _current)!, value);
                 return Unsafe.As<object, T>(ref o);
             }
 
