@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -134,6 +137,226 @@ public class AsyncProducerConsumerCollectionTests
 
             qt1?.Join();
             qt2?.Join();
+        }
+    }
+
+
+    [Test]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    public async Task MultipleQueueConsumption()
+    {
+        using var cts = new CancellationTokenSource();
+        Thread? qt1 = null;
+        Thread? qt2 = null;
+        Thread? qt3 = null;
+        try
+        {
+
+            var objects1 = new object[2000];
+            var objects2 = new object[2000];
+
+            for (var o = 0; o < 1000; ++o) objects1[o] = new();
+            for (var o = 0; o < 1000; ++o) objects2[o] = new();
+
+            var comparer = Comparer<object>.Create((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
+            Array.Sort(objects1, 0, 1000, comparer);
+            Array.Sort(objects2, 0, 1000, comparer);
+
+            using var q1 = new AsyncProducerConsumerCollection<object>(objects1);
+            using var q2 = new AsyncProducerConsumerCollection<object>(objects2);
+
+            using var mre1 = new ManualResetEventSlim();
+
+            qt1 = RunThread(() => {
+                try { mre1.Wait(cts.Token); }
+                catch (OperationCanceledException) { }
+                mre1.Dispose();
+                if (cts.IsCancellationRequested) return;
+                q1.TryAddRange(objects1);
+            });
+
+            using var mre2 = new ManualResetEventSlim();
+
+            qt2 = RunThread(() => {
+                try { mre2.Wait(cts.Token); }
+                catch (OperationCanceledException) { }
+                mre2.Dispose();
+                if (cts.IsCancellationRequested) return;
+                q1.TryAddRange(objects1);
+                q1.CompleteAdding();
+            });
+
+            qt3 = RunThread(() => {
+                try { mre2.Wait(cts.Token); }
+                catch (OperationCanceledException) { }
+                mre2.Dispose();
+                if (cts.IsCancellationRequested) return;
+                q2.TryAddRange(objects2);
+                q2.CompleteAdding();
+            });
+
+            var i = 0;
+            var c1 = q1.GetConsumer();
+            var c2 = q2.GetConsumer();
+
+            using var c = RoundRobinAsyncCollectionConsumer.Create(c1, c2);
+
+            var last1 = -1;
+            var last2 = -1;
+            await foreach (var item in c)
+            {
+                ++i;
+                if (i > 2000)
+                    item.Should().BeNull();
+                else
+                {
+                    item.Should().NotBeNull();
+                    var odd = (i & 1) != 0;
+                    if (odd)
+                    {
+                        var start = last1 == -1 ? 0 : last1;
+                        var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                        found.Should().NotBe(-1);
+                        found.Should().Be(last1 + 1);
+                        last1 = found;
+                    }
+                    else
+                    {
+                        var start = last2 == -1 ? 0 : last2;
+                        var found = Array.IndexOf(objects2, item, start, 1000 - start);
+                        found.Should().NotBe(-1);
+                        found.Should().Be(last2 + 1);
+                        last2 = found;
+                    }
+                }
+                q1.IsAddingCompleted.Should().BeFalse();
+                q2.IsAddingCompleted.Should().BeFalse();
+
+                if (i >= 4000) break;
+
+                // ReSharper disable once VariableHidesOuterVariable
+                c.WithLock(c => {
+                    c.IsCompleted.Should().BeFalse();
+                    c.IsEmpty.Should().BeFalse();
+                });
+                //q.Count.Should().Be(initCount - i);
+            }
+            // ReSharper disable once VariableHidesOuterVariable
+            c.WithLock(c => {
+                c.IsEmpty.Should().BeTrue();
+            });
+            q1.IsEmpty.Should().BeTrue();
+            q2.IsEmpty.Should().BeTrue();
+
+            mre1.Set();
+
+            last1 = -1;
+            await foreach (var item in c)
+            {
+                ++i;
+                if (i > 5000)
+                    item.Should().BeNull();
+                else
+                {
+                    item.Should().NotBeNull();
+                    var start = last1 == -1 ? 0 : last1;
+                    var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                    found.Should().NotBe(-1);
+                    found.Should().Be(last1 + 1);
+                    last1 = found;
+                }
+                if (i >= 6000) break;
+                // ReSharper disable once VariableHidesOuterVariable
+                c.WithLock(c => {
+                    c.IsCompleted.Should().BeFalse();
+                    c.IsEmpty.Should().BeFalse();
+                });
+            }
+            // ReSharper disable once VariableHidesOuterVariable
+            c.WithLock(c => {
+                c.IsEmpty.Should().BeTrue();
+            });
+            q1.IsEmpty.Should().BeTrue();
+            q2.IsEmpty.Should().BeTrue();
+
+            mre2.Set();
+
+            last1 = -1;
+            last2 = -1;
+            bool? lastWas1 = null;
+            await foreach (var item in c)
+            {
+                ++i;
+                if (i > 8000)
+                    item.Should().BeNull();
+                else
+                {
+                    item.Should().NotBeNull();
+                    if (lastWas1 is not null)
+                    {
+                        if (!lastWas1.Value)
+                        {
+                            var start = last1 == -1 ? 0 : last1;
+                            var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last1 + 1);
+                            last1 = found;
+                            lastWas1 = true;
+                        }
+                        else
+                        {
+                            var start = last2 == -1 ? 0 : last2;
+                            var found = Array.IndexOf(objects2, item, start, 1000 - start);
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last2 + 1);
+                            last2 = found;
+                            lastWas1 = false;
+                        }
+                    }
+                    else
+                    {
+                        var start = last1 == -1 ? 0 : last1;
+                        var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                        if (found == -1)
+                        {
+                            found = Array.IndexOf(objects2, item, start, 1000 - start);
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last2 + 1);
+                            last2 = found;
+                            lastWas1 = false;
+                        }
+                        else
+                        {
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last1 + 1);
+                            last1 = found;
+                            lastWas1 = true;
+                        }
+                    }
+                }
+                if (i >= 10000) break;
+                // ReSharper disable once VariableHidesOuterVariable
+                c.WithLock(c => {
+                    c.IsCompleted.Should().BeFalse();
+                    c.IsEmpty.Should().BeFalse();
+                });
+            }
+            // ReSharper disable once VariableHidesOuterVariable
+            c.WithLock(c => {
+                c.IsEmpty.Should().BeTrue();
+            });
+            q1.IsCompleted.Should().BeTrue();
+            q2.IsCompleted.Should().BeTrue();
+            q1.IsAddingCompleted.Should().BeTrue();
+            q2.IsAddingCompleted.Should().BeTrue();
+        }
+        finally
+        {
+            cts.CancelAfter(125);
+
+            qt1?.Join();
+            qt2?.Join();
+            qt3?.Join();
         }
     }
 }

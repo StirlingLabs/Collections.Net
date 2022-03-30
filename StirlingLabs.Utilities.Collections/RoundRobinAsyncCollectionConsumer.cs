@@ -1,66 +1,125 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace StirlingLabs.Utilities.Collections;
 
-public class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, IDisposable
+[PublicAPI]
+public static class RoundRobinAsyncCollectionConsumer
 {
+    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
+        => new(collections);
+    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(params AsyncProducerConsumerCollection<T>[] collections)
+        => new(collections);
+    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(IEnumerable<IAsyncConsumer<T>> collections)
+        => new(collections);
+    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(params IAsyncConsumer<T>[] collections)
+        => new(collections);
+}
+
+[PublicAPI]
+[DebuggerTypeProxy(typeof(RoundRobinAsyncCollectionConsumer<>.DebugView))]
+public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, IDisposable
+{
+    internal sealed class DebugView
+    {
+        private RoundRobinAsyncCollectionConsumer<T> _c;
+
+        public DebugView(RoundRobinAsyncCollectionConsumer<T> c)
+            => _c = c;
+
+        public object Lock => _c._lock;
+        public object RealIndex => _c._index;
+        public int Index => _c.IndexInternal;
+        public bool HasAny => _c.HasAnyInternal;
+        public bool IsEmpty => _c.IsEmptyInternal;
+        public bool IsCompleted => _c.IsCompletedInternal;
+    }
+    
     private readonly object _lock = new();
 
     private readonly IAsyncConsumer<T>[] _consumers;
 
     private int _index = -1;
 
+    public int IncrementIndex()
+    {
+        if (!Monitor.IsEntered(_lock))
+            throw new InvalidOperationException("Must be in lock to increment index.");
+        return _index = (_index + 1) % _consumers.Length;
+    }
+
+    [DebuggerDisplay("{"+nameof(IndexInternal)+"}")]
     public int Index
     {
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to access index.");
-            return _index % _consumers.Length;
+            return IndexInternal;
         }
     }
 
-    public int IncrementIndex()
-    {
-        if (!Monitor.IsEntered(_lock))
-            throw new InvalidOperationException("Must be in lock to increment index.");
-        var value = _index;
-        _index = (value + 1) % _consumers.Length;
-        return value;
-    }
+    private int IndexInternal => _index % _consumers.Length;
 
     public IAsyncConsumer<T> CurrentConsumer
     {
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to access index.");
-            return _consumers[Index];
+            return CurrentConsumerInternal;
         }
     }
+
+    private IAsyncConsumer<T> CurrentConsumerInternal => _consumers[Index];
+
+    public bool IsCompleted
+    {
+        get {
+            if (!Monitor.IsEntered(_lock))
+                throw new InvalidOperationException("Must be in lock to read collection state.");
+            return IsCompletedInternal;
+        }
+    }
+
+    private bool IsCompletedInternal => _consumers.All(c => c.IsCompleted);
 
     public bool HasAny
     {
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to read collection state.");
-            return _consumers.Any(c => !c.IsEmpty);
+            return HasAnyInternal;
         }
     }
 
-    public bool IsEmpty => !HasAny;
+    private bool HasAnyInternal => _consumers.Any(c => !c.IsEmpty);
 
-    private void WithLock(Action<RoundRobinAsyncCollectionConsumer<T>> action)
+    public bool IsEmpty
     {
+        get {
+            if (!Monitor.IsEntered(_lock))
+                throw new InvalidOperationException("Must be in lock to read collection state.");
+            return IsEmptyInternal;
+        }
+    }
+
+    private bool IsEmptyInternal => _consumers.All(c => c.IsEmpty);
+
+    public void WithLock(Action<RoundRobinAsyncCollectionConsumer<T>> action)
+    {
+        if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this);
     }
-    private TResult WithLock<TResult>(Func<RoundRobinAsyncCollectionConsumer<T>, TResult> fn)
+    public TResult WithLock<TResult>(Func<RoundRobinAsyncCollectionConsumer<T>, TResult> fn)
     {
+        if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this);
     }
 
@@ -74,10 +133,15 @@ public class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, IDispos
     public RoundRobinAsyncCollectionConsumer(params IAsyncConsumer<T>[] consumers)
         => _consumers = consumers;
 
-    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        => new Enumerator(this, cancellationToken);
+    public Enumerator GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        => new(this, cancellationToken);
 
-    private class Enumerator : IAsyncEnumerator<T>, IDisposable
+    IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(CancellationToken cancellationToken)
+        => GetAsyncEnumerator(cancellationToken);
+
+    [PublicAPI]
+    [SuppressMessage("Design", "CA1034", Justification = "Design choice")]
+    public sealed class Enumerator : IAsyncEnumerator<T>, IDisposable
     {
         private RoundRobinAsyncCollectionConsumer<T>? _consumer;
         private readonly CancellationToken _cancellationToken;
@@ -85,6 +149,7 @@ public class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, IDispos
         {
             _consumer = consumer;
             _cancellationToken = cancellationToken;
+            Current = default!;
         }
 
         public ValueTask DisposeAsync()
@@ -94,7 +159,10 @@ public class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, IDispos
         }
 
         public void Dispose()
-            => _consumer = null;
+        {
+            _consumer = null;
+            Current = default!;
+        }
 
         public async ValueTask<bool> MoveNextAsync(bool continueOnCapturedContext)
         {
