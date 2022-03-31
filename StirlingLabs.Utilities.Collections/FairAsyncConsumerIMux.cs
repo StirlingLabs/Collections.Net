@@ -49,12 +49,28 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
 
     private int _index = -1;
 
-    public int IncrementIndex()
-    {
-        if (!Monitor.IsEntered(_lock))
-            throw new InvalidOperationException("Must be in lock to increment index.");
-        return _index = (_index + 1) % _consumers.Length;
-    }
+    public FairAsyncConsumerIMux(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
+        : this(collections.Select(c => (IAsyncConsumer<T>)c.GetConsumer()).ToArray()) { }
+
+    public FairAsyncConsumerIMux(params AsyncProducerConsumerCollection<T>[] collections)
+        : this(collections.Select(c => (IAsyncConsumer<T>)c.GetConsumer()).ToArray()) { }
+    public FairAsyncConsumerIMux(IEnumerable<IAsyncConsumer<T>> consumers)
+        : this(consumers.ToArray()) { }
+    public FairAsyncConsumerIMux(params IAsyncConsumer<T>[] consumers)
+        => _consumers = consumers;
+
+    public FairAsyncConsumerIMux(int index, IEnumerable<AsyncProducerConsumerCollection<T>> collections)
+        : this(collections.ToArray())
+        => IndexInternal = index;
+    public FairAsyncConsumerIMux(int index, params AsyncProducerConsumerCollection<T>[] collections)
+        : this(collections)
+        => IndexInternal = index;
+    public FairAsyncConsumerIMux(int index, IEnumerable<IAsyncConsumer<T>> consumers)
+        : this(consumers.ToArray())
+        => IndexInternal = index;
+    public FairAsyncConsumerIMux(int index, params IAsyncConsumer<T>[] consumers)
+        : this(consumers)
+        => IndexInternal = index;
 
     public int Index
     {
@@ -149,39 +165,36 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
         get => _consumers.All(c => c.IsEmpty);
     }
 
+    public int IncrementIndex()
+    {
+        if (!Monitor.IsEntered(_lock))
+            throw new InvalidOperationException("Must be in lock to increment index.");
+        return _index = (_index + 1) % _consumers.Length;
+    }
+
     public void WithLock(Action<FairAsyncConsumerIMux<T>> action)
     {
         if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this);
     }
+    
     public TResult WithLock<TResult>(Func<FairAsyncConsumerIMux<T>, TResult> fn)
     {
         if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this);
     }
 
-    public FairAsyncConsumerIMux(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
-        : this(collections.Select(c => (IAsyncConsumer<T>)c.GetConsumer()).ToArray()) { }
-
-    public FairAsyncConsumerIMux(params AsyncProducerConsumerCollection<T>[] collections)
-        : this(collections.Select(c => (IAsyncConsumer<T>)c.GetConsumer()).ToArray()) { }
-    public FairAsyncConsumerIMux(IEnumerable<IAsyncConsumer<T>> consumers)
-        : this(consumers.ToArray()) { }
-    public FairAsyncConsumerIMux(params IAsyncConsumer<T>[] consumers)
-        => _consumers = consumers;
-
-    public FairAsyncConsumerIMux(int index, IEnumerable<AsyncProducerConsumerCollection<T>> collections)
-        : this(collections.ToArray())
-        => IndexInternal = index;
-    public FairAsyncConsumerIMux(int index, params AsyncProducerConsumerCollection<T>[] collections)
-        : this(collections)
-        => IndexInternal = index;
-    public FairAsyncConsumerIMux(int index, IEnumerable<IAsyncConsumer<T>> consumers)
-        : this(consumers.ToArray())
-        => IndexInternal = index;
-    public FairAsyncConsumerIMux(int index, params IAsyncConsumer<T>[] consumers)
-        : this(consumers)
-        => IndexInternal = index;
+    public void WithLock(Action<FairAsyncConsumerIMux<T>, object> action)
+    {
+        if (action is null) throw new ArgumentNullException(nameof(action));
+        lock (_lock) action(this, _lock);
+    }
+    
+    public TResult WithLock<TResult>(Func<FairAsyncConsumerIMux<T>, object, TResult> fn)
+    {
+        if (fn is null) throw new ArgumentNullException(nameof(fn));
+        lock (_lock) return fn(this, _lock);
+    }
 
     protected override IAsyncEnumerator<T> GetAsyncEnumeratorImpl(CancellationToken cancellationToken = default)
         => GetAsyncEnumerator(cancellationToken);
@@ -237,7 +250,8 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
             }
             return true;
         }
-        private bool TryConsume(FairAsyncConsumerIMux<T> c)
+        
+        private bool TryConsume(FairAsyncConsumerIMux<T> c, object l)
         {
             var consumers = c._consumers;
             do
