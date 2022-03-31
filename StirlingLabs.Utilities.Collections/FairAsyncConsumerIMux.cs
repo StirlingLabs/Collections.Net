@@ -64,6 +64,11 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
                 throw new InvalidOperationException("Must be in lock to access index.");
             return IndexInternal;
         }
+        set {
+            if (!Monitor.IsEntered(_lock))
+                throw new InvalidOperationException("Must be in lock to access index.");
+            IndexInternal = value;
+        }
     }
 
     private int IndexInternal
@@ -71,6 +76,9 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _index % _consumers.Length;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => _index = value % _consumers.Length;
     }
 
     public IAsyncConsumer<T> CurrentConsumer
@@ -161,6 +169,19 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
         : this(consumers.ToArray()) { }
     public FairAsyncConsumerIMux(params IAsyncConsumer<T>[] consumers)
         => _consumers = consumers;
+
+    public FairAsyncConsumerIMux(int index, IEnumerable<AsyncProducerConsumerCollection<T>> collections)
+        : this(collections.ToArray())
+        => IndexInternal = index;
+    public FairAsyncConsumerIMux(int index, params AsyncProducerConsumerCollection<T>[] collections)
+        : this(collections)
+        => IndexInternal = index;
+    public FairAsyncConsumerIMux(int index, IEnumerable<IAsyncConsumer<T>> consumers)
+        : this(consumers.ToArray())
+        => IndexInternal = index;
+    public FairAsyncConsumerIMux(int index, params IAsyncConsumer<T>[] consumers)
+        : this(consumers)
+        => IndexInternal = index;
 
     protected override IAsyncEnumerator<T> GetAsyncEnumeratorImpl(CancellationToken cancellationToken = default)
         => GetAsyncEnumerator(cancellationToken);
