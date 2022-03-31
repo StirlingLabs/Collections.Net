@@ -33,9 +33,9 @@ public class AsyncProducerConsumerCollectionTests
         try
         {
 
-            var objects = new object[8000];
+            var objects = new object[300];
 
-            for (var o = 0; o < 1000; ++o) objects[o] = new();
+            for (var o = 0; o < 150; ++o) objects[o] = new();
 
             using var q = new AsyncProducerConsumerCollection<object>(objects);
 
@@ -97,6 +97,7 @@ public class AsyncProducerConsumerCollectionTests
             q.Count.Should().Be(0);
 
             mre1.Set();
+            Thread.Sleep(10);
             i = 0;
 
             await foreach (var item in c)
@@ -133,7 +134,7 @@ public class AsyncProducerConsumerCollectionTests
         }
         finally
         {
-            cts.CancelAfter(125);
+            cts.Cancel();
 
             qt1?.Join();
             qt2?.Join();
@@ -151,16 +152,18 @@ public class AsyncProducerConsumerCollectionTests
         Thread? qt3 = null;
         try
         {
+            const int objectsArrayPop = 1000;
+            const int objectsArraySize = 2000;
 
-            var objects1 = new object[2000];
-            var objects2 = new object[2000];
+            var objects1 = new object[objectsArraySize];
+            var objects2 = new object[objectsArraySize];
 
-            for (var o = 0; o < 1000; ++o) objects1[o] = new();
-            for (var o = 0; o < 1000; ++o) objects2[o] = new();
+            for (var o = 0; o < objectsArrayPop; ++o) objects1[o] = new();
+            for (var o = 0; o < objectsArrayPop; ++o) objects2[o] = new();
 
             var comparer = Comparer<object>.Create((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
-            Array.Sort(objects1, 0, 1000, comparer);
-            Array.Sort(objects2, 0, 1000, comparer);
+            Array.Sort(objects1, 0, objectsArrayPop, comparer);
+            Array.Sort(objects2, 0, objectsArrayPop, comparer);
 
             using var q1 = new AsyncProducerConsumerCollection<object>(objects1);
             using var q2 = new AsyncProducerConsumerCollection<object>(objects2);
@@ -199,14 +202,14 @@ public class AsyncProducerConsumerCollectionTests
             var c1 = q1.GetConsumer();
             var c2 = q2.GetConsumer();
 
-            using var c = RoundRobinAsyncCollectionConsumer.Create(c1, c2);
+            using var c = FairAsyncCollectionsConsumer.Create(c1, c2);
 
             var last1 = -1;
             var last2 = -1;
             await foreach (var item in c)
             {
                 ++i;
-                if (i > 2000)
+                if (i > objectsArraySize)
                     item.Should().BeNull();
                 else
                 {
@@ -215,7 +218,7 @@ public class AsyncProducerConsumerCollectionTests
                     if (odd)
                     {
                         var start = last1 == -1 ? 0 : last1;
-                        var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                        var found = Array.IndexOf(objects1, item, start, objectsArrayPop - start);
                         found.Should().NotBe(-1);
                         found.Should().Be(last1 + 1);
                         last1 = found;
@@ -223,7 +226,7 @@ public class AsyncProducerConsumerCollectionTests
                     else
                     {
                         var start = last2 == -1 ? 0 : last2;
-                        var found = Array.IndexOf(objects2, item, start, 1000 - start);
+                        var found = Array.IndexOf(objects2, item, start, objectsArrayPop - start);
                         found.Should().NotBe(-1);
                         found.Should().Be(last2 + 1);
                         last2 = found;
@@ -254,13 +257,13 @@ public class AsyncProducerConsumerCollectionTests
             await foreach (var item in c)
             {
                 ++i;
-                if (i > 5000)
+                if (i > objectsArraySize * 2 + objectsArrayPop)
                     item.Should().BeNull();
                 else
                 {
                     item.Should().NotBeNull();
                     var start = last1 == -1 ? 0 : last1;
-                    var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                    var found = Array.IndexOf(objects1, item, start, objectsArrayPop - start);
                     found.Should().NotBe(-1);
                     found.Should().Be(last1 + 1);
                     last1 = found;
@@ -287,7 +290,7 @@ public class AsyncProducerConsumerCollectionTests
             await foreach (var item in c)
             {
                 ++i;
-                if (i > 8000)
+                if (i > objectsArraySize * 4)
                     item.Should().BeNull();
                 else
                 {
@@ -297,7 +300,7 @@ public class AsyncProducerConsumerCollectionTests
                         if (!lastWas1.Value)
                         {
                             var start = last1 == -1 ? 0 : last1;
-                            var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                            var found = Array.IndexOf(objects1, item, start, objectsArrayPop - start);
                             found.Should().NotBe(-1);
                             found.Should().Be(last1 + 1);
                             last1 = found;
@@ -306,7 +309,7 @@ public class AsyncProducerConsumerCollectionTests
                         else
                         {
                             var start = last2 == -1 ? 0 : last2;
-                            var found = Array.IndexOf(objects2, item, start, 1000 - start);
+                            var found = Array.IndexOf(objects2, item, start, objectsArrayPop - start);
                             found.Should().NotBe(-1);
                             found.Should().Be(last2 + 1);
                             last2 = found;
@@ -316,10 +319,10 @@ public class AsyncProducerConsumerCollectionTests
                     else
                     {
                         var start = last1 == -1 ? 0 : last1;
-                        var found = Array.IndexOf(objects1, item, start, 1000 - start);
+                        var found = Array.IndexOf(objects1, item, start, objectsArrayPop - start);
                         if (found == -1)
                         {
-                            found = Array.IndexOf(objects2, item, start, 1000 - start);
+                            found = Array.IndexOf(objects2, item, start, objectsArrayPop - start);
                             found.Should().NotBe(-1);
                             found.Should().Be(last2 + 1);
                             last2 = found;
@@ -334,7 +337,7 @@ public class AsyncProducerConsumerCollectionTests
                         }
                     }
                 }
-                if (i >= 10000) break;
+                if (i >= objectsArraySize * 5) break;
                 // ReSharper disable once VariableHidesOuterVariable
                 c.WithLock(c => {
                     c.IsCompleted.Should().BeFalse();
@@ -352,11 +355,134 @@ public class AsyncProducerConsumerCollectionTests
         }
         finally
         {
-            cts.CancelAfter(125);
+            cts.Cancel();
 
             qt1?.Join();
             qt2?.Join();
             qt3?.Join();
+        }
+    }
+
+
+    [Test]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    public async Task UnevenQueueConsumption()
+    {
+        using var cts = new CancellationTokenSource();
+        try
+        {
+
+            const int objects1Length = 600;
+            const int objects2Length = 200;
+            var objects1 = new object[objects1Length];
+            var objects2 = new object[objects2Length];
+
+            for (var o = 0; o < objects1Length; ++o) objects1[o] = new();
+            for (var o = 0; o < objects2Length; ++o) objects2[o] = new();
+
+            var comparer = Comparer<object>.Create((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
+            Array.Sort(objects1, 0, objects1Length, comparer);
+            Array.Sort(objects2, 0, objects2Length, comparer);
+
+            using var q1 = new AsyncProducerConsumerCollection<object>(objects1);
+            using var q2 = new AsyncProducerConsumerCollection<object>(objects2);
+
+            q1.CompleteAdding();
+            q2.CompleteAdding();
+
+            var i = 0;
+            var c1 = q1.GetConsumer();
+            var c2 = q2.GetConsumer();
+
+            using var c = FairAsyncCollectionsConsumer.Create(c1, c2);
+
+            // objects1Length + objects2Length
+            //var seen = new SortedSet<object>(comparer);
+
+            var last1 = -1;
+            var last2 = -1;
+            bool? lastWas1 = null;
+            const int total = objects1Length + objects2Length;
+            const int cut = (objects1Length > objects2Length ? objects2Length : objects1Length) * 2;
+            await foreach (var item in c)
+            {
+                ++i;
+                //TestContext.Out.WriteLine($"object {i}: H{item.GetHashCode()}, 1#{Array.IndexOf(objects1, item)}, 2#{Array.IndexOf(objects2, item)}");
+                if (i > cut)
+                {
+                    item.Should().NotBeNull();
+                    //seen.Add(item).Should().BeTrue();
+                    var start = last1 == -1 ? 0 : last1;
+                    var found = Array.IndexOf(objects1, item, start, objects1Length - start);
+                    found.Should().NotBe(-1, $"object {i} was not found in objects1");
+                    found.Should().Be(last1 + 1);
+                    last1 = found;
+                }
+                else
+                {
+                    item.Should().NotBeNull();
+                    //seen.Add(item).Should().BeTrue();
+                    if (lastWas1 is not null)
+                    {
+                        if (!lastWas1.Value)
+                        {
+                            var start = last1 == -1 ? 0 : last1;
+                            var found = Array.IndexOf(objects1, item, start, objects1Length - start);
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last1 + 1);
+                            last1 = found;
+                            lastWas1 = true;
+                        }
+                        else
+                        {
+                            var start = last2 == -1 ? 0 : last2;
+                            var found = Array.IndexOf(objects2, item, start, objects2Length - start);
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last2 + 1);
+                            last2 = found;
+                            lastWas1 = false;
+                        }
+                    }
+                    else
+                    {
+                        var start = last1 == -1 ? 0 : last1;
+                        var found = Array.IndexOf(objects1, item, start, objects1Length - start);
+                        if (found == -1)
+                        {
+                            found = Array.IndexOf(objects2, item, start, objects2Length - start);
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last2 + 1);
+                            last2 = found;
+                            lastWas1 = false;
+                        }
+                        else
+                        {
+                            found.Should().NotBe(-1);
+                            found.Should().Be(last1 + 1);
+                            last1 = found;
+                            lastWas1 = true;
+                        }
+                    }
+                }
+                if (i >= total) break;
+                // ReSharper disable once VariableHidesOuterVariable
+                c.WithLock(c => {
+                    c.IsCompleted.Should().BeFalse();
+                    c.IsEmpty.Should().BeFalse();
+                });
+            }
+            // ReSharper disable once VariableHidesOuterVariable
+            c.WithLock(c => {
+                c.IsEmpty.Should().BeTrue();
+            });
+            q1.IsCompleted.Should().BeTrue();
+            q2.IsCompleted.Should().BeTrue();
+            q1.IsAddingCompleted.Should().BeTrue();
+            q2.IsAddingCompleted.Should().BeTrue();
+        }
+        finally
+        {
+            cts.Cancel();
         }
     }
 }

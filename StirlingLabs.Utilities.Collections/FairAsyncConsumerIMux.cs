@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -12,27 +11,28 @@ using JetBrains.Annotations;
 namespace StirlingLabs.Utilities.Collections;
 
 [PublicAPI]
-public static class RoundRobinAsyncCollectionConsumer
+public static class FairAsyncCollectionsConsumer
 {
-    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
+    public static FairAsyncConsumerIMux<T> Create<T>(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
         => new(collections);
-    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(params AsyncProducerConsumerCollection<T>[] collections)
+    public static FairAsyncConsumerIMux<T> Create<T>(params AsyncProducerConsumerCollection<T>[] collections)
         => new(collections);
-    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(IEnumerable<IAsyncConsumer<T>> collections)
+    public static FairAsyncConsumerIMux<T> Create<T>(IEnumerable<IAsyncConsumer<T>> collections)
         => new(collections);
-    public static RoundRobinAsyncCollectionConsumer<T> Create<T>(params IAsyncConsumer<T>[] collections)
+    public static FairAsyncConsumerIMux<T> Create<T>(params IAsyncConsumer<T>[] collections)
         => new(collections);
 }
 
 [PublicAPI]
-[DebuggerTypeProxy(typeof(RoundRobinAsyncCollectionConsumer<>.DebugView))]
-public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, IDisposable
+[DebuggerTypeProxy(typeof(FairAsyncConsumerIMux<>.DebugView))]
+public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
 {
+    [PublicAPI]
     internal sealed class DebugView
     {
-        private RoundRobinAsyncCollectionConsumer<T> _c;
+        private FairAsyncConsumerIMux<T> _c;
 
-        public DebugView(RoundRobinAsyncCollectionConsumer<T> c)
+        public DebugView(FairAsyncConsumerIMux<T> c)
             => _c = c;
 
         public object Lock => _c._lock;
@@ -42,7 +42,7 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         public bool IsEmpty => _c.IsEmptyInternal;
         public bool IsCompleted => _c.IsCompletedInternal;
     }
-    
+
     private readonly object _lock = new();
 
     private readonly IAsyncConsumer<T>[] _consumers;
@@ -56,9 +56,9 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         return _index = (_index + 1) % _consumers.Length;
     }
 
-    [DebuggerDisplay("{"+nameof(IndexInternal)+"}")]
     public int Index
     {
+        [Pure]
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to access index.");
@@ -66,10 +66,16 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         }
     }
 
-    private int IndexInternal => _index % _consumers.Length;
+    private int IndexInternal
+    {
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _index % _consumers.Length;
+    }
 
     public IAsyncConsumer<T> CurrentConsumer
     {
+        [Pure]
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to access index.");
@@ -77,10 +83,16 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         }
     }
 
-    private IAsyncConsumer<T> CurrentConsumerInternal => _consumers[Index];
+    private IAsyncConsumer<T> CurrentConsumerInternal
+    {
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _consumers[Index];
+    }
 
     public bool IsCompleted
     {
+        [Pure]
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to read collection state.");
@@ -88,10 +100,16 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         }
     }
 
-    private bool IsCompletedInternal => _consumers.All(c => c.IsCompleted);
+    private bool IsCompletedInternal
+    {
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _consumers.All(c => c.IsCompleted);
+    }
 
     public bool HasAny
     {
+        [Pure]
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to read collection state.");
@@ -99,10 +117,16 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         }
     }
 
-    private bool HasAnyInternal => _consumers.Any(c => !c.IsEmpty);
+    private bool HasAnyInternal
+    {
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _consumers.Any(c => !c.IsEmpty);
+    }
 
     public bool IsEmpty
     {
+        [Pure]
         get {
             if (!Monitor.IsEntered(_lock))
                 throw new InvalidOperationException("Must be in lock to read collection state.");
@@ -110,44 +134,49 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         }
     }
 
-    private bool IsEmptyInternal => _consumers.All(c => c.IsEmpty);
+    private bool IsEmptyInternal
+    {
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _consumers.All(c => c.IsEmpty);
+    }
 
-    public void WithLock(Action<RoundRobinAsyncCollectionConsumer<T>> action)
+    public void WithLock(Action<FairAsyncConsumerIMux<T>> action)
     {
         if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this);
     }
-    public TResult WithLock<TResult>(Func<RoundRobinAsyncCollectionConsumer<T>, TResult> fn)
+    public TResult WithLock<TResult>(Func<FairAsyncConsumerIMux<T>, TResult> fn)
     {
         if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this);
     }
 
-    public RoundRobinAsyncCollectionConsumer(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
+    public FairAsyncConsumerIMux(IEnumerable<AsyncProducerConsumerCollection<T>> collections)
         : this(collections.Select(c => (IAsyncConsumer<T>)c.GetConsumer()).ToArray()) { }
 
-    public RoundRobinAsyncCollectionConsumer(params AsyncProducerConsumerCollection<T>[] collections)
+    public FairAsyncConsumerIMux(params AsyncProducerConsumerCollection<T>[] collections)
         : this(collections.Select(c => (IAsyncConsumer<T>)c.GetConsumer()).ToArray()) { }
-    public RoundRobinAsyncCollectionConsumer(IEnumerable<IAsyncConsumer<T>> consumers)
+    public FairAsyncConsumerIMux(IEnumerable<IAsyncConsumer<T>> consumers)
         : this(consumers.ToArray()) { }
-    public RoundRobinAsyncCollectionConsumer(params IAsyncConsumer<T>[] consumers)
+    public FairAsyncConsumerIMux(params IAsyncConsumer<T>[] consumers)
         => _consumers = consumers;
 
-    public Enumerator GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        => new(this, cancellationToken);
-
-    IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(CancellationToken cancellationToken)
+    protected override IAsyncEnumerator<T> GetAsyncEnumeratorImpl(CancellationToken cancellationToken = default)
         => GetAsyncEnumerator(cancellationToken);
+
+    public new Enumerator GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        => new(this, cancellationToken);
 
     [PublicAPI]
     [SuppressMessage("Design", "CA1034", Justification = "Design choice")]
     public sealed class Enumerator : IAsyncEnumerator<T>, IDisposable
     {
-        private RoundRobinAsyncCollectionConsumer<T>? _consumer;
+        private FairAsyncConsumerIMux<T>? _consumerIMux;
         private readonly CancellationToken _cancellationToken;
-        public Enumerator(RoundRobinAsyncCollectionConsumer<T> consumer, CancellationToken cancellationToken)
+        public Enumerator(FairAsyncConsumerIMux<T> consumerIMux, CancellationToken cancellationToken)
         {
-            _consumer = consumer;
+            _consumerIMux = consumerIMux;
             _cancellationToken = cancellationToken;
             Current = default!;
         }
@@ -160,35 +189,18 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
 
         public void Dispose()
         {
-            _consumer = null;
+            _consumerIMux = null;
             Current = default!;
         }
 
         public async ValueTask<bool> MoveNextAsync(bool continueOnCapturedContext)
         {
-            if (_consumer is null) return false;
-            while (_consumer.WithLock(c => {
-                       var consumers = c._consumers;
-                       do
-                       {
-                           var index = c.IncrementIndex();
-                           var consumer = consumers[index];
-                           if (!consumer.TryMoveNext(out var item))
-                           {
-                               // release gc the ref if it's completed
-                               if (consumer.IsCompleted)
-                                   consumers[index] = AsyncConsumer<T>.Empty;
-                               continue;
-                           }
-                           Current = item!;
-                           return false;
-                       } while (c.HasAny);
-                       return true;
-                   }))
+            if (_consumerIMux is null) return false;
+            while (!_consumerIMux.WithLock(TryConsume))
             {
                 try
                 {
-                    var remainingConsumers = _consumer._consumers
+                    var remainingConsumers = _consumerIMux._consumers
                         .Where(c => !c.IsCompleted)
                         .Select(c => c.WaitForAvailableAsync(continueOnCapturedContext, _cancellationToken).AsTask())
                         .ToArray();
@@ -204,6 +216,25 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
             }
             return true;
         }
+        private bool TryConsume(FairAsyncConsumerIMux<T> c)
+        {
+            var consumers = c._consumers;
+            do
+            {
+                var index = c.IncrementIndex();
+                var consumer = consumers[index];
+                if (!consumer.TryMoveNext(out var item))
+                {
+                    // release gc the ref if it's completed
+                    if (consumer.IsCompleted)
+                        consumers[index] = AsyncConsumer<T>.Empty;
+                    continue;
+                }
+                Current = item!;
+                return true;
+            } while (c.HasAny);
+            return false;
+        }
 
         [SuppressMessage("Reliability", "CA2007")]
         public async ValueTask<bool> MoveNextAsync()
@@ -212,7 +243,7 @@ public sealed class RoundRobinAsyncCollectionConsumer<T> : IAsyncEnumerable<T>, 
         public T Current { get; private set; }
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         for (var i = 0; i < _consumers.Length; ++i)
             _consumers[i] = AsyncConsumer<T>.Empty;
