@@ -172,25 +172,25 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
         return _index = (_index + 1) % _consumers.Length;
     }
 
-    public void WithLock(Action<FairAsyncConsumerIMux<T>> action)
+    public void WithLock([InstantHandle] Action<FairAsyncConsumerIMux<T>> action)
     {
         if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this);
     }
     
-    public TResult WithLock<TResult>(Func<FairAsyncConsumerIMux<T>, TResult> fn)
+    public TResult WithLock<TResult>([InstantHandle]Func<FairAsyncConsumerIMux<T>, TResult> fn)
     {
         if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this);
     }
 
-    public void WithLock(Action<FairAsyncConsumerIMux<T>, object> action)
+    public void WithLock([InstantHandle]Action<FairAsyncConsumerIMux<T>, object> action)
     {
         if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this, _lock);
     }
     
-    public TResult WithLock<TResult>(Func<FairAsyncConsumerIMux<T>, object, TResult> fn)
+    public TResult WithLock<TResult>([InstantHandle]Func<FairAsyncConsumerIMux<T>, object, TResult> fn)
     {
         if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this, _lock);
