@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace StirlingLabs.Utilities.Collections;
 
-public sealed class EmptyAsyncConsumer<T> : IAsyncConsumer<T>, IEnumerator<T>
+public sealed class EmptyAsyncConsumer<T> : IAsyncConsumer<T>
 {
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         => this;

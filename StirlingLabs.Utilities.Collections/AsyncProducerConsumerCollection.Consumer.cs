@@ -14,7 +14,7 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 {
     [PublicAPI]
     [SuppressMessage("Microsoft.Design", "CA1034", Justification = "Nested class has private member access")]
-    public class Consumer : IAsyncConsumer<T>, IEquatable<Consumer>, IAsyncEnumerator<T>, IEnumerator<T>
+    public sealed class Consumer : IAsyncConsumer<T>, IEquatable<Consumer>
     {
         private static readonly bool IsClassType = typeof(T).IsClass;
         private static readonly int SizeOfType = Unsafe.SizeOf<T>();
@@ -70,8 +70,8 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Consumer other)
-            => Collection.Equals(other.Collection);
+        public bool Equals(Consumer? other)
+            => Collection.Equals(other?.Collection);
 
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,12 +108,12 @@ public sealed partial class AsyncProducerConsumerCollection<T>
             => GetEnumerator();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Consumer left, Consumer right)
-            => left.Equals(right);
+        public static bool operator ==(Consumer? left, Consumer? right)
+            => left?.Equals(right) ?? right is null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Consumer left, Consumer right)
-            => !left.Equals(right);
+        public static bool operator !=(Consumer? left, Consumer? right)
+            => !(left == right);
 
         [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task")]
         public async ValueTask<bool> MoveNextAsync()
@@ -240,6 +240,7 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetCurrentToDefault()
         {
+            [SuppressMessage("ReSharper", "UnusedParameter.Local")]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void Discard(T v) { }
 
