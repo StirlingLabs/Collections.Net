@@ -36,12 +36,19 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         _addingComplete = CancellationTokenSource.CreateLinkedTokenSource(_complete.Token);
     }
 
-    public AsyncProducerConsumerCollection()
-        : this(new ConcurrentQueue<T>()) { }
+    public AsyncProducerConsumerCollection(IProducerConsumerCollection<T> collection, IEnumerable<T> items)
+    : this(collection)
+    {
+        if (!ReferenceEquals(collection, items))
+            TryAddRange(items);
+    }
 
     public AsyncProducerConsumerCollection(IEnumerable<T> items)
-        : this(items is IProducerConsumerCollection<T> pcc ? pcc : new ConcurrentQueue<T>())
-        => TryAddRange(items);
+        : this(items is IProducerConsumerCollection<T> pcc ? pcc : new ConcurrentQueue<T>(), items)
+    { }
+
+    public AsyncProducerConsumerCollection()
+        : this(new ConcurrentQueue<T>()) { }
 
 
     public bool IsAddingCompleted

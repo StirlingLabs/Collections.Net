@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -22,6 +23,72 @@ public class AsyncProducerConsumerCollectionTests
         thread.Start(a);
         return thread;
     }
+
+    [Test]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    public void GeneralTest1()
+    {
+        AsyncProducerConsumerCollection<int>? a;
+
+        using (a = new())
+        {
+            a.Count.Should().Be(0);
+            a.IsEmpty.Should().BeTrue();
+            a.IsAddingCompleted.Should().BeFalse();
+            a.IsCompleted.Should().BeFalse();
+            a.IsDisposed.Should().BeFalse();
+        }
+
+        a.IsAddingCompleted.Should().BeTrue();
+        a.IsCompleted.Should().BeTrue();
+        a.IsDisposed.Should().BeTrue();
+    }
+
+    public static IEnumerable<IEnumerable<int>> GeneralTest2ValueSource()
+    {
+        yield return new[] { 1, 2, 3 };
+        yield return new ConcurrentQueue<int>(new[] { 1, 2, 3 });
+        yield return new ConcurrentStack<int>(new[] { 3, 2, 1 });
+    }
+
+    [Theory]
+    [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    public void GeneralTest2([ValueSource(nameof(GeneralTest2ValueSource))] IEnumerable<int> items)
+    {
+        AsyncProducerConsumerCollection<int>? a;
+
+        using (a = new(items))
+        {
+            a.Count.Should().Be(3);
+            a.IsEmpty.Should().BeFalse();
+            a.IsAddingCompleted.Should().BeFalse();
+            a.IsCompleted.Should().BeFalse();
+            a.IsDisposed.Should().BeFalse();
+
+            a.CompleteAdding();
+            a.IsEmpty.Should().BeFalse();
+            a.IsAddingCompleted.Should().BeTrue();
+            a.IsCompleted.Should().BeFalse();
+            a.IsDisposed.Should().BeFalse();
+
+            for (var i = 1; i <= 3; ++i)
+            {
+                a.IsEmpty.Should().BeFalse();
+                a.TryTake(out var x).Should().BeTrue();
+                x.Should().Be(i);
+            }
+
+            a.IsEmpty.Should().BeTrue();
+            a.IsAddingCompleted.Should().BeTrue();
+            a.IsCompleted.Should().BeTrue();
+            a.IsDisposed.Should().BeFalse();
+        }
+
+        a.IsAddingCompleted.Should().BeTrue();
+        a.IsCompleted.Should().BeTrue();
+        a.IsDisposed.Should().BeTrue();
+    }
+
 
     [Test]
     [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
