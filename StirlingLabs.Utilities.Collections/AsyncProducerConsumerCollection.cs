@@ -105,7 +105,8 @@ public sealed partial class AsyncProducerConsumerCollection<T>
                 return count;
             count++;
         }
-        _semaphore.Release(count);
+        if (count > 0)
+            _semaphore.Release(count);
         return count;
     }
 
