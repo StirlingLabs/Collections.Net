@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<coverage line-rate="0.3931" branch-rate="0.275" version="1.9" timestamp="1650684509" lines-covered="195" lines-valid="496" branches-covered="66" branches-valid="240">
+<coverage line-rate="0.3923" branch-rate="0.275" version="1.9" timestamp="1650685760" lines-covered="195" lines-valid="497" branches-covered="66" branches-valid="240">
   <sources />
   <packages>
-    <package name="StirlingLabs.Utilities.Collections" line-rate="0.3931" branch-rate="0.275" complexity="340">
+    <package name="StirlingLabs.Utilities.Collections" line-rate="0.3923" branch-rate="0.275" complexity="341">
       <classes>
         <class name="StirlingLabs.Utilities.Collections.AsyncConsumer`1" filename="/_/StirlingLabs.Utilities.Collections/AsyncConsumer.cs" line-rate="1" branch-rate="1" complexity="1">
           <methods>
@@ -1070,7 +1070,7 @@
             <line number="188" hits="0" branch="False" />
           </lines>
         </class>
-        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.Consumer.cs" line-rate="0.5882000000000001" branch-rate="0.3095" complexity="60">
+        <class name="StirlingLabs.Utilities.Collections.AsyncProducerConsumerCollection`1/Consumer" filename="/_/StirlingLabs.Utilities.Collections/AsyncProducerConsumerCollection.Consumer.cs" line-rate="0.5813" branch-rate="0.3095" complexity="61">
           <methods>
             <method name="System.Collections.IEnumerator.get_Current" signature="()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -1303,6 +1303,11 @@
                 <line number="272" hits="0" branch="False" />
               </lines>
             </method>
+            <method name="TryWaitForAvailableAsync" signature="(System.Boolean,System.Threading.CancellationToken)" line-rate="0" branch-rate="1" complexity="1">
+              <lines>
+                <line number="275" hits="0" branch="False" />
+              </lines>
+            </method>
             <method name="&lt;SetCurrentToDefault&gt;g__Discard|34_0" signature="(T)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
                 <line number="251" hits="0" branch="False" />
@@ -1458,6 +1463,7 @@
             <line number="265" hits="2" branch="False" />
             <line number="269" hits="0" branch="False" />
             <line number="272" hits="0" branch="False" />
+            <line number="275" hits="0" branch="False" />
             <line number="251" hits="0" branch="False" />
             <line number="32" hits="7" branch="False" />
             <line number="34" hits="7" branch="False" />
