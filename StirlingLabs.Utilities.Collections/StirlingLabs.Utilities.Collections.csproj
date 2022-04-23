@@ -14,7 +14,7 @@
     </ImportGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" PrivateAssets="all" />
+        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
         <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     </ItemGroup>

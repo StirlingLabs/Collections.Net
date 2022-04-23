@@ -127,7 +127,12 @@ public sealed partial class AsyncProducerConsumerCollection<T>
                     Current = item;
                     break;
                 }
-                await Collection.WaitForAvailableAsync(_cancellationToken);
+                if (!await Collection.TryWaitForAvailableAsync(_cancellationToken))
+                {
+                    Collection.TryToComplete();
+                    Collection.CheckDisposed();
+                    return false;
+                }
             } while (!Collection.IsCompletedInternal);
             Collection.TryToComplete();
             Collection.CheckDisposed();
@@ -145,7 +150,8 @@ public sealed partial class AsyncProducerConsumerCollection<T>
                     Current = item;
                     break;
                 }
-                Collection.WaitForAvailable(_cancellationToken);
+                if (!Collection.TryWaitForAvailable(_cancellationToken))
+                    break;
             } while (!Collection.IsCompletedInternal);
             Collection.TryToComplete();
             Collection.CheckDisposed();

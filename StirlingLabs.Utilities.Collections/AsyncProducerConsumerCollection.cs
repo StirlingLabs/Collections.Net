@@ -37,15 +37,14 @@ public sealed partial class AsyncProducerConsumerCollection<T>
     }
 
     public AsyncProducerConsumerCollection(IProducerConsumerCollection<T> collection, IEnumerable<T> items)
-    : this(collection)
+        : this(collection)
     {
         if (!ReferenceEquals(collection, items))
             TryAddRange(items);
     }
 
     public AsyncProducerConsumerCollection(IEnumerable<T> items)
-        : this(items is IProducerConsumerCollection<T> pcc ? pcc : new ConcurrentQueue<T>(), items)
-    { }
+        : this(items is IProducerConsumerCollection<T> pcc ? pcc : new ConcurrentQueue<T>(), items) { }
 
     public AsyncProducerConsumerCollection()
         : this(new ConcurrentQueue<T>()) { }
@@ -127,8 +126,14 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 
         for (;;)
         {
-            await WaitForAvailableAsync(continueOnCapturedContext, cancellationToken)
-                .ConfigureAwait(continueOnCapturedContext);
+            if (!await TryWaitForAvailableAsync(continueOnCapturedContext, cancellationToken)
+                    .ConfigureAwait(continueOnCapturedContext))
+            {
+                if (TryToComplete())
+                    throw new OperationCanceledException("The collection has completed.", _complete.Token);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw new NotImplementedException();
+            }
 
             if (_collection.TryTake(out var item))
             {
@@ -165,7 +170,20 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         else
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(_addingComplete.Token, cancellationToken);
-            await _semaphore.WaitAsync(cts.Token).ConfigureAwait(continueOnCapturedContext);
+            try
+            {
+                await _semaphore.WaitAsync(cts.Token).ConfigureAwait(continueOnCapturedContext);
+            }
+            catch (OperationCanceledException oce)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException(oce.Message, oce, cancellationToken);
+                if (IsAddingCompleted)
+                    throw new OperationCanceledException(
+                        "The AsyncQueue completed adding, therefore there will not be any more available items.",
+                        oce, _addingComplete.Token);
+                throw;
+            }
         }
     }
 
@@ -176,7 +194,8 @@ public sealed partial class AsyncProducerConsumerCollection<T>
         if (IsCompletedInternal)
             throw new InvalidOperationException("The AsyncQueue has already fully completed.");
 
-        if (!IsEmpty) return;
+        if (!IsEmpty)
+            return;
 
         if (IsAddingCompleted)
             throw new OperationCanceledException("The AsyncQueue completed adding, therefore there will not be any more available items.");
@@ -188,6 +207,77 @@ public sealed partial class AsyncProducerConsumerCollection<T>
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(_addingComplete.Token, cancellationToken);
             _semaphore.Wait(cts.Token);
         }
+    }
+
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValueTask<bool> TryWaitForAvailableAsync(CancellationToken cancellationToken = default)
+        => TryWaitForAvailableAsync(true, cancellationToken);
+
+    public async ValueTask<bool> TryWaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken)
+    {
+        CheckDisposed();
+
+        if (IsCompletedInternal)
+            return false;
+
+        if (!IsEmpty)
+            return true;
+
+        if (IsAddingCompleted)
+            return false;
+
+        if (cancellationToken == default)
+            await _semaphore.WaitAsync(_addingComplete.Token).ConfigureAwait(continueOnCapturedContext);
+        else
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(_addingComplete.Token, cancellationToken);
+            try
+            {
+                await _semaphore.WaitAsync(cts.Token).ConfigureAwait(continueOnCapturedContext);
+            }
+            catch (OperationCanceledException)
+            {
+                if (cancellationToken.IsCancellationRequested
+                    || IsAddingCompleted)
+                    return false;
+                throw;
+            }
+        }
+        return true;
+    }
+
+    public bool TryWaitForAvailable(CancellationToken cancellationToken)
+    {
+        CheckDisposed();
+
+        if (IsCompletedInternal)
+            return false;
+
+        if (!IsEmpty)
+            return true;
+
+        if (IsAddingCompleted)
+            return false;
+
+        try
+        {
+            if (cancellationToken == default)
+                _semaphore.Wait(_addingComplete.Token);
+            else
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(_addingComplete.Token, cancellationToken);
+                _semaphore.Wait(cts.Token);
+            }
+        }
+        catch (OperationCanceledException oce)
+        {
+            if (oce.CancellationToken == cancellationToken
+                && IsAddingCompleted)
+                return false;
+            throw;
+        }
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

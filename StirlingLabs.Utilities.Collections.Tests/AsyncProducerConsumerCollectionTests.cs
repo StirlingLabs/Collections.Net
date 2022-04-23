@@ -211,6 +211,8 @@ public class AsyncProducerConsumerCollectionTests
 
     [Test]
     [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+    [SuppressMessage("ReSharper", "CognitiveComplexity")]
+    //[SuppressMessage("	Maintainability", "CA1502")] // TODO: split test
     public async Task MultipleQueueConsumption()
     {
         using var cts = new CancellationTokenSource();
