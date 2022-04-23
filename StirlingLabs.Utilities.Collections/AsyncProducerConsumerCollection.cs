@@ -228,7 +228,18 @@ public sealed partial class AsyncProducerConsumerCollection<T>
             return false;
 
         if (cancellationToken == default)
-            await _semaphore.WaitAsync(_addingComplete.Token).ConfigureAwait(continueOnCapturedContext);
+        {
+            try
+            {
+                await _semaphore.WaitAsync(_addingComplete.Token).ConfigureAwait(continueOnCapturedContext);
+            }
+            catch (OperationCanceledException)
+            {
+                if (IsAddingCompleted)
+                    return false;
+                throw;
+            }
+        }
         else
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(_addingComplete.Token, cancellationToken);
