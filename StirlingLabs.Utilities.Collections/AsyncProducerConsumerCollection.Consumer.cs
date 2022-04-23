@@ -270,5 +270,8 @@ public sealed partial class AsyncProducerConsumerCollection<T>
 
         public ValueTask WaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken)
             => Collection.WaitForAvailableAsync(continueOnCapturedContext, cancellationToken);
+
+        public ValueTask<bool> TryWaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken)
+            => Collection.TryWaitForAvailableAsync(continueOnCapturedContext, cancellationToken);
     }
 }
