@@ -16,4 +16,6 @@ public interface IAsyncConsumer<T> : IAsyncEnumerable<T>, IEnumerable<T>, IAsync
     bool TryMoveNext(out T? item);
 
     ValueTask WaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken);
+    
+    ValueTask<bool> TryWaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken);
 }

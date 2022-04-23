@@ -177,20 +177,20 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
         if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this);
     }
-    
-    public TResult WithLock<TResult>([InstantHandle]Func<FairAsyncConsumerIMux<T>, TResult> fn)
+
+    public TResult WithLock<TResult>([InstantHandle] Func<FairAsyncConsumerIMux<T>, TResult> fn)
     {
         if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this);
     }
 
-    public void WithLock([InstantHandle]Action<FairAsyncConsumerIMux<T>, object> action)
+    public void WithLock([InstantHandle] Action<FairAsyncConsumerIMux<T>, object> action)
     {
         if (action is null) throw new ArgumentNullException(nameof(action));
         lock (_lock) action(this, _lock);
     }
-    
-    public TResult WithLock<TResult>([InstantHandle]Func<FairAsyncConsumerIMux<T>, object, TResult> fn)
+
+    public TResult WithLock<TResult>([InstantHandle] Func<FairAsyncConsumerIMux<T>, object, TResult> fn)
     {
         if (fn is null) throw new ArgumentNullException(nameof(fn));
         lock (_lock) return fn(this, _lock);
@@ -236,21 +236,31 @@ public sealed class FairAsyncConsumerIMux<T> : AsyncConsumerIMux<T>
                 {
                     var remainingConsumers = _consumerIMux._consumers
                         .Where(c => !c.IsCompleted)
-                        .Select(c => c.WaitForAvailableAsync(continueOnCapturedContext, _cancellationToken).AsTask())
-                        .ToArray();
+                        .Select(c => c.TryWaitForAvailableAsync(continueOnCapturedContext, _cancellationToken).AsTask())
+                        .ToList();
 
-                    if (remainingConsumers.Length == 0)
+                    if (remainingConsumers.Count == 0)
                         return false;
 
-                    await Task.WhenAny(remainingConsumers)
-                        .ConfigureAwait(continueOnCapturedContext);
+                    for (;;)
+                    {
+                        var available = await Task.WhenAny(remainingConsumers)
+                            .ConfigureAwait(continueOnCapturedContext);
+
+#pragma warning disable CA2007
+                        if (await available) break;
+#pragma warning restore CA2007
+
+                        remainingConsumers.Remove(available);
+                    }
+
                 }
                 catch (OperationCanceledException) { }
                 catch (InvalidOperationException) { }
             }
             return true;
         }
-        
+
         private bool TryConsume(FairAsyncConsumerIMux<T> c, object l)
         {
             var consumers = c._consumers;

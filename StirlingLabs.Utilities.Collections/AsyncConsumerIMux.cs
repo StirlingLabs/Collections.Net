@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using JetBrains.Annotations;
 
@@ -19,6 +20,7 @@ public static class AsyncConsumerIMux
         => new FairAsyncConsumerIMux<T>(collections);
 }
 
+[SuppressMessage("Design", "CA1063", Justification = "Not necessary")]
 public abstract class AsyncConsumerIMux<T>
     : IAsyncEnumerable<T>, IDisposable
 {

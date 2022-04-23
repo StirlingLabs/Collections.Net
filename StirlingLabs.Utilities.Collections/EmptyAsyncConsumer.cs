@@ -46,5 +46,8 @@ public sealed class EmptyAsyncConsumer<T> : IAsyncConsumer<T>
     public ValueTask WaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken)
         => default;
 
+    public ValueTask<bool> TryWaitForAvailableAsync(bool continueOnCapturedContext, CancellationToken cancellationToken)
+        => default;
+
     public void Dispose() { }
 }
