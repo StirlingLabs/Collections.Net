@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<coverage line-rate="0.38530000000000003" branch-rate="0.2704" version="1.9" timestamp="1650687412" lines-covered="195" lines-valid="506" branches-covered="66" branches-valid="244">
+<coverage line-rate="0.38530000000000003" branch-rate="0.2704" version="1.9" timestamp="1651857487" lines-covered="195" lines-valid="506" branches-covered="66" branches-valid="244">
   <sources />
   <packages>
     <package name="StirlingLabs.Utilities.Collections" line-rate="0.38530000000000003" branch-rate="0.2704" complexity="346">
