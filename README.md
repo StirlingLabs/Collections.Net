@@ -1,16 +1,12 @@
 ![Collections.Net](utilities-collections.jpg)
 
-### Collections used throughout the Stirling Labs C# codebase
+Collections used in the Stirling Labs codebase that aren't in the standard libraries.
 
 ## 🚀 How to install
-
-If you've [configured GitHub Packages](/StirlingLabs/Logging/blob/master/docs/GitHubPackages.md), you can just:
 
 ```bash
 > dotnet add PROJECT package StirlingLabs.Utilities.Collections
 ```
-
-or just use NuGet however you would normally.
 
 ## 👀 What's included
 
