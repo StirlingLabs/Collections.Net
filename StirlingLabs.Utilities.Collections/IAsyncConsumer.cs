@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 
-namespace StirlingLabs.Utilities.Collections;
-
-public interface IAsyncConsumer<out T> : IAsyncEnumerable<T>, IEnumerable<T>
+namespace StirlingLabs.Utilities.Collections
 {
-    bool IsEmpty { get; }
+    public interface IAsyncConsumer<out T> : IAsyncEnumerable<T>, IEnumerable<T>
+    {
+        bool IsEmpty { get; }
 
-    bool IsCompleted { get; }
+        bool IsCompleted { get; }
+    }
 }

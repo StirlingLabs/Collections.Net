@@ -6,107 +6,108 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace StirlingLabs.Utilities.Collections;
-
-public sealed partial class AsyncProducerConsumerCollection<T>
+namespace StirlingLabs.Utilities.Collections
 {
-    [SuppressMessage("Microsoft.Design", "CA1034", Justification = "Nested class has private member access")]
-    public readonly struct Consumer : IAsyncConsumer<T>, IEquatable<Consumer>
+    public sealed partial class AsyncProducerConsumerCollection<T>
     {
-        public readonly AsyncProducerConsumerCollection<T> Collection;
-
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Consumer(AsyncProducerConsumerCollection<T> collection)
-            => Collection = collection;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Consumer other)
-            => Collection.Equals(other.Collection);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object? obj)
-            => obj is Consumer other && Equals(other);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int GetHashCode()
-            => Collection.GetHashCode();
-
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        [SuppressMessage("Microsoft.Design", "CA1034", Justification = "Nested class has private member access")]
+        public readonly struct Consumer : IAsyncConsumer<T>, IEquatable<Consumer>
         {
-            Collection.CheckDisposed();
+            public readonly AsyncProducerConsumerCollection<T> Collection;
 
-            do
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal Consumer(AsyncProducerConsumerCollection<T> collection)
+                => Collection = collection;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool Equals(Consumer other)
+                => Collection.Equals(other.Collection);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override bool Equals(object? obj)
+                => obj is Consumer other && Equals(other);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override int GetHashCode()
+                => Collection.GetHashCode();
+
+            public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
-                T item;
-                try
+                Collection.CheckDisposed();
+
+                do
                 {
-                    item = await Collection.TakeAsync(cancellationToken)
-                        .ConfigureAwait(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    yield break;
-                }
-
-                yield return item;
-            } while (!cancellationToken.IsCancellationRequested && !Collection.IsCompletedInternal);
-
-            Collection.TryToComplete();
-
-            Collection.CheckDisposed();
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            Collection.CheckDisposed();
-
-            do
-            {
-                T item;
-                try
-                {
-                    if (!Collection.TryTake(out item!))
+                    T item;
+                    try
                     {
-                        break;
+                        item = await Collection.TakeAsync(cancellationToken)
+                            .ConfigureAwait(true);
                     }
-                }
-                catch (OperationCanceledException)
+                    catch (OperationCanceledException)
+                    {
+                        yield break;
+                    }
+
+                    yield return item;
+                } while (!cancellationToken.IsCancellationRequested && !Collection.IsCompletedInternal);
+
+                Collection.TryToComplete();
+
+                Collection.CheckDisposed();
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                Collection.CheckDisposed();
+
+                do
                 {
-                    yield break;
-                }
+                    T item;
+                    try
+                    {
+                        if (!Collection.TryTake(out item!))
+                        {
+                            break;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        yield break;
+                    }
 
-                yield return item;
-            } while (!Collection.IsCompletedInternal);
+                    yield return item;
+                } while (!Collection.IsCompletedInternal);
 
-            Collection.TryToComplete();
+                Collection.TryToComplete();
 
-            Collection.CheckDisposed();
-        }
+                Collection.CheckDisposed();
+            }
 
-        [DebuggerStepThrough]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        IEnumerator IEnumerable.GetEnumerator()
-            => GetEnumerator();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Consumer left, Consumer right)
-            => left.Equals(right);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Consumer left, Consumer right)
-            => !left.Equals(right);
-
-        public bool IsEmpty
-        {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Collection.IsEmpty;
-        }
+            IEnumerator IEnumerable.GetEnumerator()
+                => GetEnumerator();
 
-        public bool IsCompleted
-        {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Collection.IsCompletedInternal;
+            public static bool operator ==(Consumer left, Consumer right)
+                => left.Equals(right);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator !=(Consumer left, Consumer right)
+                => !left.Equals(right);
+
+            public bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => Collection.IsEmpty;
+            }
+
+            public bool IsCompleted
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => Collection.IsCompletedInternal;
+            }
         }
     }
 }
