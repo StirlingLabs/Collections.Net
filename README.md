@@ -1,4 +1,4 @@
-![Collections.Net](utilities-collections.jpg)
+![Collections.Net](https://raw.githubusercontent.com/StirlingLabs/Collections.Net/main/utilities-collections.jpg)
 
 Collections used in the Stirling Labs codebase that aren't in the standard libraries.
 
