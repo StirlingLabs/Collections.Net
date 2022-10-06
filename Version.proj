@@ -6,11 +6,16 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/StirlingLabs/Collections.Net.git</RepositoryUrl>
         <PackageProjectUrl>https://github.com/StirlingLabs/Collections.Net</PackageProjectUrl>
+        <description>
+          Collections used throughout the Stirling Labs C# codebase, including; 
+          AsyncProducerConsumer and ConcurrentBijectiveSet.
+        </description>       
         <GitDefaultBranch>master</GitDefaultBranch>
         <GitCommitsIgnoreMerges>true</GitCommitsIgnoreMerges>
         <VersionNetDebugImportance>high</VersionNetDebugImportance>
         <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
         <PackageIcon>SL.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     <ImportGroup>
         <Import Project="StirlingLabs.Version/Version.proj" />
@@ -18,5 +23,6 @@
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" Visible="false"/>
         <None Include="$(MSBuildThisFileDirectory)SL.png" Pack="true" PackagePath="SL.png" Visible="false"/>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="README.md" Visible="false"/>
     </ItemGroup>
 </Project>
