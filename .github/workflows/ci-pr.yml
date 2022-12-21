@@ -20,7 +20,7 @@ jobs:
           paths_ignore: '["**/README.md", ".idea/**", ".editorconfig", ".git*", "docs/**", ".github/**"]'
       - name: Full checkout
         if: ${{ steps.skip_check.outputs.should_skip != 'true' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Check if should be release / has version tag
@@ -39,7 +39,7 @@ jobs:
         DOTNET_NOLOGO: true
         DOTNET_CLI_TELEMETRY_OPTOUT: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - name: Fetch tag git metadata
@@ -53,7 +53,7 @@ jobs:
           && echo "::set-output name=has_6_0::true" || \
           compgen -G "/usr/share/dotnet/sdk/6.0.*" \
           && echo "::set-output name=has_6_0::true" || true
-      - uses: actions/setup-dotnet@v1.9.1
+      - uses: actions/setup-dotnet@v3
         if: ${{ steps.dotnet_check.outputs.has_6_0 != 'true' }}
         with:
           dotnet-version: 6.0.x
@@ -66,7 +66,7 @@ jobs:
       - name: Test
         run: dotnet test StirlingLabs.Collections.Net.sln --no-build -c Release --logger GitHubActions
       - name: Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: StirlingLabs.Utilities.Collections
           path: |
